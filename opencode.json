@@ -1,0 +1,36 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "autoupdate": true,
+    "server": {
+        "port": 9001
+    },
+    "plugin": [],
+    "agent": {
+        "build": {
+            "model": "opencode-go/deepseek-v4-pro"
+        },
+        "plan": {
+            "model": "moonshot/kimi-k2.6"
+        },
+        "project-manager": {
+            "mode": "primary",
+            "temperature": 0.8,
+            "top_p": 0.8,
+            "permission": {
+                "read": "allow",
+                "glob": "allow",
+                "grep": "allow",
+                "question": "allow",
+                "webfetch": "allow",
+                "edit": {
+                    "docs/*": "allow",
+                    "planning/*": "allow",
+                    "*.md": "allow",
+                    "*.txt": "allow",
+                    "*": "deny"
+                },
+                "bash": "deny"
+            }
+        }
+    }
+}
