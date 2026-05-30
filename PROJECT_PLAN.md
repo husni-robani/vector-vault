@@ -12,6 +12,7 @@
 
 | Layer | Decision | Rationale |
 |-------|----------|-----------|
+| Architecture | Clean Architecture (Ports & Adapters) | Independent of frameworks, testable, swappable infrastructure |
 | Runtime | Local web app (localhost) | Avoids WSL+Electron friction; Tauri wrap later |
 | Backend | Python 3.11+ / FastAPI | Best RAG ecosystem, async, auto-docs |
 | LLM Runtime | Ollama | Simple setup, REST API, quantized model support |
@@ -20,39 +21,96 @@
 | Embedding Model | all-MiniLM-L6-v2 | 80MB, fast, solid English quality |
 | Frontend | Vue 3 + Vite | Approachable, good for smaller apps |
 | UI Paradigm | Chat-based RAG (MVP) | Simplest to build; hybrid UI later |
-| RAG Pipeline | LangChain primitives | Component reuse without framework lock-in |
+| External Libraries | LangChain primitives (wrapped in adapters) | LangChain lives only in infrastructure layer; swappable |
 | Data Sources | Markdown (.md), PDF (.pdf) | No OCR pipeline needed for MVP |
 
 ---
 
-## 3. Project Structure
+## 3. Project Structure (Clean Architecture)
 
 ```
 vector-vault/
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
-│   │   ├── main.py                  # FastAPI app entry point
-│   │   ├── config.py               # Settings (pydantic-settings)
-│   │   ├── api/
+│   │   ├── main.py                     # Composition root: wires DI, starts uvicorn
+│   │   ├── config.py                   # Settings (pydantic-settings)
+│   │   ├── dependencies.py             # FastAPI DI providers (get_use_case)
+│   │   │
+│   │   ├── domain/                     # LAYER 0: Entities — zero deps
 │   │   │   ├── __init__.py
-│   │   │   ├── router.py           # Aggregated API router
-│   │   │   ├── chat.py             # POST /api/chat
-│   │   │   ├── documents.py         # POST/GET/DELETE /api/documents
-│   │   │   └── health.py           # GET /api/health
-│   │   ├── services/
+│   │   │   ├── documents.py            # Document, DocumentType, DocumentStatus
+│   │   │   ├── chunks.py               # Chunk, SearchResult
+│   │   │   └── conversations.py        # Conversation, Message (Phase 2)
+│   │   │
+│   │   ├── application/                # LAYER 1: Business logic — depends on domain
 │   │   │   ├── __init__.py
-│   │   │   ├── ingestion.py         # Document loading, chunking, embedding
-│   │   │   ├── retrieval.py         # Query embedding, vector search
-│   │   │   ├── generation.py        # LLM call via Ollama
-│   │   │   └── rag_pipeline.py      # Orchestrates retrieval + generation
-│   │   └── models/
+│   │   │   ├── ports/                  # Abstract interfaces (what we need)
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── vector_store.py     # VectorStorePort
+│   │   │   │   ├── embedding.py        # EmbeddingPort
+│   │   │   │   ├── llm.py              # LLMPort
+│   │   │   │   ├── document_repo.py    # DocumentRepositoryPort
+│   │   │   │   ├── file_storage.py     # FileStoragePort
+│   │   │   │   ├── document_loader.py  # DocumentLoaderPort
+│   │   │   │   └── text_splitter.py    # TextSplitterPort
+│   │   │   ├── dto/                    # Use case input/output objects (@dataclass)
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── chat_dto.py
+│   │   │   │   └── documents_dto.py
+│   │   │   └── use_cases/              # Single-responsibility orchestrators
+│   │   │       ├── __init__.py
+│   │   │       ├── ingest_document.py  # IngestDocumentUseCase
+│   │   │       ├── answer_question.py  # AnswerQuestionUseCase
+│   │   │       ├── list_documents.py   # ListDocumentsUseCase
+│   │   │       ├── delete_document.py  # DeleteDocumentUseCase
+│   │   │       └── check_health.py     # HealthCheckUseCase
+│   │   │
+│   │   ├── infrastructure/             # LAYER 2: Adapters — depends on application ports
+│   │   │   ├── __init__.py
+│   │   │   ├── vector_store/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── chromadb_adapter.py # ChromaDBVectorStore : VectorStorePort
+│   │   │   ├── embedding/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── hf_sentence_adapter.py # SentenceTransformerEmbedding : EmbeddingPort
+│   │   │   ├── llm/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── ollama_adapter.py   # OllamaLLM : LLMPort
+│   │   │   ├── document_repo/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── chromadb_repository.py # ChromaDBDocumentRepository : DocumentRepositoryPort
+│   │   │   ├── file_storage/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── local_storage.py    # LocalFileStorage : FileStoragePort
+│   │   │   ├── document_loaders/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── langchain_loader.py # LangChainDocumentLoader : DocumentLoaderPort
+│   │   │   └── text_splitter/
+│   │   │       ├── __init__.py
+│   │   │       └── langchain_splitter.py # LangChainTextSplitter : TextSplitterPort
+│   │   │
+│   │   └── interfaces/                 # LAYER 3: Delivery — depends on application
 │   │       ├── __init__.py
-│   │       ├── chat.py              # ChatRequest, ChatResponse
-│   │       └── documents.py          # DocumentUpload, DocumentInfo
+│   │       ├── api/
+│   │       │   ├── __init__.py
+│   │       │   ├── router.py           # Aggregated API router
+│   │       │   ├── chat.py             # POST /api/chat (thin controller)
+│   │       │   ├── documents.py        # POST/GET/DELETE /api/documents
+│   │       │   └── health.py           # GET /api/health
+│   │       └── serializers/            # HTTP boundary models (Pydantic)
+│   │           ├── __init__.py
+│   │           ├── chat_schemas.py     # ChatRequest, ChatResponse
+│   │           └── documents_schemas.py # DocumentUpload, DocumentInfo
+│   │
 │   ├── data/
-│   │   ├── chroma_db/              # ChromaDB persistence directory
-│   │   └── uploads/                # Raw uploaded files
+│   │   ├── chroma_db/                  # ChromaDB persistence
+│   │   └── uploads/                    # Raw uploaded files
+│   ├── tests/
+│   │   ├── domain/                     # Unit tests — pure entities, no mocks needed
+│   │   ├── application/                # Unit tests — use cases with mocked ports
+│   │   ├── infrastructure/             # Integration tests — real adapters
+│   │   └── interfaces/                 # E2E tests — FastAPI TestClient
 │   ├── requirements.txt
 │   └── pyproject.toml
 ├── frontend/
@@ -60,16 +118,16 @@ vector-vault/
 │   │   ├── main.ts
 │   │   ├── App.vue
 │   │   ├── api/
-│   │   │   └── client.ts           # Axios/fetch wrapper
+│   │   │   └── client.ts
 │   │   ├── components/
-│   │   │   ├── ChatMessage.vue      # Single message bubble
-│   │   │   ├── ChatInput.vue        # Message input bar
-│   │   │   ├── DocumentUpload.vue   # Drag & drop upload
-│   │   │   └── DocumentList.vue     # List uploaded documents
+│   │   │   ├── ChatMessage.vue
+│   │   │   ├── ChatInput.vue
+│   │   │   ├── DocumentUpload.vue
+│   │   │   └── DocumentList.vue
 │   │   ├── views/
-│   │   │   └── ChatView.vue        # Main chat page
+│   │   │   └── ChatView.vue
 │   │   ├── types/
-│   │   │   └── index.ts            # TypeScript interfaces
+│   │   │   └── index.ts
 │   │   └── assets/
 │   │       └── styles/
 │   │           └── main.css
@@ -78,115 +136,151 @@ vector-vault/
 │   ├── tsconfig.json
 │   └── package.json
 └── docs/
-    ├── API.md                      # API design document
-    └── SETUP.md                    # Setup & configuration guide
+    ├── API.md
+    └── SETUP.md
 ```
 
 ---
 
-## 4. Data Flow
+## 4. Data Flow (Clean Architecture)
+
+### 4.1 Chat Flow (AnswerQuestionUseCase)
 
 ```
-User Message
-    │
-    ▼
-┌─────────────────┐
-│  FastAPI POST    │
-│  /api/chat       │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐     ┌──────────────────┐
-│  Embed query     │────▶│  ChromaDB search  │
-│  (MiniLM)        │     │  (top-k chunks)   │
-└─────────────────┘     └────────┬─────────┘
-                                 │
-                                 ▼
-                    ┌──────────────────────┐
-                    │  Build prompt:        │
-                    │  system + context +   │
-                    │  question             │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │  Ollama LLM call      │
-                    │  (Llama 3.1 8B)       │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │  Stream response      │
-                    │  to frontend          │
-                    └──────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ INTERFACES (FastAPI Controller)                                   │
+│                                                                   │
+│  Post /api/chat  →  chat.py                                      │
+│    │  parse ChatRequest Pydantic schema                           │
+│    │  build AnswerQuestionInput DTO                               │
+│    ▼                                                              │
+│  calls AnswerQuestionUseCase.execute(input)                       │
+│  returns StreamingResponse                                        │
+└──────────────────────────┬───────────────────────────────────────┘
+                           │
+┌──────────────────────────▼───────────────────────────────────────┐
+│ APPLICATION (Use Case)                                             │
+│                                                                   │
+│  AnswerQuestionUseCase.execute(input)                              │
+│    1. embedding: EmbeddingPort.embed([input.message])             │
+│    2. vector_store: VectorStorePort.search(embedding, k=5)        │
+│    3. Build prompt from retrieved chunks                          │
+│    4. llm: LLMPort.generate(prompt) → async iterator              │
+│    Returns: AsyncIterator[AnswerQuestionOutput]                    │
+└──────┬──────────────────┬──────────────────┬─────────────────────┘
+       │                  │                  │
+       ▼                  ▼                  ▼
+┌──────────────┐ ┌──────────────┐ ┌──────────────────┐
+│ INFRASTRUCTURE│ │ INFRASTRUCTURE│ │ INFRASTRUCTURE    │
+│ EmbeddingPort │ │ VectorStorPort│ │ LLMPort           │
+│ (HuggingFace) │ │ (ChromaDB)   │ │ (Ollama)          │
+│               │ │               │ │                   │
+│ embed(texts)  │ │ search(embed) │ │ generate(prompt)  │
+│ → 384-dim vec │ │ → top-k chunks│ │ → SSE token stream│
+└──────────────┘ └──────────────┘ └──────────────────┘
 ```
 
+### 4.2 Document Ingestion Flow (IngestDocumentUseCase)
+
 ```
-Document Upload
-    │
-    ▼
-┌─────────────────┐
-│  FastAPI POST    │
-│  /api/documents  │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Save file to    │
-│  data/uploads/   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Load document   │  (LangChain loaders: UnstructuredMarkdownLoader, PyMuPDFLoader)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Split chunks    │  (RecursiveCharacterTextSplitter, ~512 tokens, 50 overlap)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Embed chunks    │  (all-MiniLM-L6-v2, batch embed)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Store in        │
-│  ChromaDB         │  (with metadata: source, page, chunk_idx)
-└─────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ INTERFACES (FastAPI Controller)                                   │
+│                                                                   │
+│  POST /api/documents  →  documents.py                             │
+│    │  parse multipart/form-data                                   │
+│    │  build IngestDocumentInput DTO                               │
+│    ▼                                                              │
+│  calls IngestDocumentUseCase.execute(input)                       │
+│  returns DocumentUploadResponse schema                            │
+└──────────────────────────┬───────────────────────────────────────┘
+                           │
+┌──────────────────────────▼───────────────────────────────────────┐
+│ APPLICATION (Use Case)                                            │
+│                                                                   │
+│  IngestDocumentUseCase.execute(input)                             │
+│    1. file_storage: FileStoragePort.save(filename, content)       │
+│    2. loader: DocumentLoaderPort.load(path) → str                 │
+│    3. splitter: TextSplitterPort.split(text) → list[str]          │
+│    4. embedding: EmbeddingPort.embed(chunks) → list[vector]       │
+│    5. vector_store: VectorStorePort.add_chunks(chunks, vectors)   │
+│    6. doc_repo: DocumentRepositoryPort.save(Document entity)      │
+│    Returns: IngestDocumentOutput                                  │
+└──────┬─────────┬──────────┬──────────┬──────────┬────────────────┘
+       │         │          │          │          │
+       ▼         ▼          ▼          ▼          ▼
+┌──────────┐ ┌──────┐ ┌────────┐ ┌──────────┐ ┌──────────────┐
+│FileStore │ │Loader│ │Splitter│ │Embedding │ │Vector Store  │
+│(Local)   │ │(LC)  │ │(LC)    │ │(HF)       │ │(ChromaDB)   │
+└──────────┘ └──────┘ └────────┘ └──────────┘ └──────────────┘
+```
+
+### 4.3 Dependency Rule Visualization
+
+```
+                     ┌─────────────────┐
+                     │   interfaces/   │  ← Controllers, Serializers
+                     │  (FastAPI DTOs) │     depends on application
+                     └────────┬────────┘
+                              │
+                     ┌────────▼────────┐
+                     │  application/   │  ← Use Cases, Ports
+                     │  (business      │     depends on domain only
+                     │   logic)        │
+                     └──┬──────────┬───┘
+                        │          │
+            ┌───────────▼──┐  ┌────▼───────────┐
+            │   domain/    │  │ infrastructure/ │  ← Adapters
+            │  (entities)  │  │ (ChromaDB,      │     implements ports
+            │  zero deps   │  │  Ollama, etc.)  │     from application
+            └──────────────┘  └────────────────┘
+
+Dependency direction: interfaces → application → domain ← infrastructure
+(Infrastructure implements ports defined in application)
 ```
 
 ---
 
-## 5. RAG Pipeline Details
+## 5. Port, Adapter & Use Case Map
 
-### 5.1 Document Ingestion
+### 5.1 Ports (Abstract Interfaces — `application/ports/`)
 
-| Step | Tool | Parameters |
-|------|------|------------|
-| Load Markdown | `UnstructuredMarkdownLoader` | - |
-| Load PDF | `PyMuPDFLoader` (via `langchain-community`) | - |
-| Split chunks | `RecursiveCharacterTextSplitter` | `chunk_size=512`, `chunk_overlap=50` |
-| Embed | `HuggingFaceEmbeddings` | `model_name="all-MiniLM-L6-v2"` |
-| Store | ChromaDB `add_texts()` | `ids=[hash]`, `metadatas=[{source, page, chunk_idx}]` |
+Each port defines what the application needs. Defined as an abstract class with `@abstractmethod`.
 
-### 5.2 Retrieval
+| Port | Responsibility | Key Methods | Default Adapter |
+|------|---------------|-------------|-----------------|
+| `EmbeddingPort` | Convert text(s) to vectors | `embed(texts) → list[list[float]]` | `SentenceTransformerEmbedding` |
+| `LLMPort` | Generate text from prompt | `generate(prompt) → AsyncIterator[str]` | `OllamaLLM` |
+| `VectorStorePort` | Store and search embeddings | `add_chunks()`, `search()`, `delete_by_document()` | `ChromaDBVectorStore` |
+| `DocumentLoaderPort` | Load file into raw text | `load(path) → str` | `LangChainDocumentLoader` |
+| `TextSplitterPort` | Split text into chunks | `split(text) → list[str]` | `LangChainTextSplitter` |
+| `FileStoragePort` | Save/delete raw files | `save(name, bytes) → path`, `delete(path)` | `LocalFileStorage` |
+| `DocumentRepositoryPort` | Persist document metadata | `save(doc)`, `find_all()`, `delete(id)` | `ChromaDBDocumentRepository` |
 
-| Step | Tool | Parameters |
-|------|------|------------|
-| Embed query | `HuggingFaceEmbeddings` | Same model as ingestion |
-| Search | ChromaDB `similarity_search()` | `k=5` (top 5 chunks) |
-| Score threshold | ChromaDB `similarity_search_with_relevance_score()` | `score_threshold=0.7` |
+### 5.2 Adapters (Concrete Implementations — `infrastructure/`)
 
-### 5.3 Generation
+LangChain lives **only** in the infrastructure layer, wrapped behind ports:
 
-| Step | Tool | Parameters |
-|------|------|------------|
-| Build prompt | Custom prompt template | See prompt template below |
-| LLM call | `OllamaLLM` or raw HTTP to `http://localhost:11434/api/generate` | `model="llama3.1"`, `stream=True` |
-| Stream | Server-Sent Events (SSE) via FastAPI `StreamingResponse` | - |
+| Adapter | Implements | Wraps | Notes |
+|---------|-----------|-------|-------|
+| `ChromaDBVectorStore` | `VectorStorePort` | `chromadb.PersistentClient` | Embedded, no separate server |
+| `SentenceTransformerEmbedding` | `EmbeddingPort` | `sentence_transformers` | all-MiniLM-L6-v2, 384-dim vectors |
+| `OllamaLLM` | `LLMPort` | HTTP calls to `localhost:11434` | Streaming via SSE |
+| `LangChainDocumentLoader` | `DocumentLoaderPort` | `UnstructuredMarkdownLoader`, `PyMuPDFLoader` | Routes by file extension |
+| `LangChainTextSplitter` | `TextSplitterPort` | `RecursiveCharacterTextSplitter` | chunk_size=512, overlap=50 |
+| `LocalFileStorage` | `FileStoragePort` | `pathlib`, `shutil` | Saves to `data/uploads/` |
+| `ChromaDBDocumentRepository` | `DocumentRepositoryPort` | ChromaDB metadata collection | Stores doc metadata as ChromaDB metadata |
+
+### 5.3 Use Cases (`application/use_cases/`)
+
+Each use case is a class with dependencies injected via constructor. Only orchestrates port calls — zero infrastructure imports.
+
+| Use Case | Dependencies (ports) | Orchestrates |
+|----------|---------------------|-------------|
+| `IngestDocumentUseCase` | FileStorage + DocLoader + TextSplitter + Embedding + VectorStore + DocRepo | Upload → Load → Split → Embed → Store |
+| `AnswerQuestionUseCase` | Embedding + VectorStore + LLM | Embed → Search → Prompt → Generate |
+| `ListDocumentsUseCase` | DocumentRepository | List all indexed documents |
+| `DeleteDocumentUseCase` | VectorStore + DocRepo + FileStorage | Delete chunks + metadata + file |
+| `HealthCheckUseCase` | LLM + VectorStore + Embedding | Verify all adapters healthy |
 
 ### 5.4 Prompt Template
 
@@ -201,19 +295,43 @@ Question: {question}
 Answer:
 ```
 
+### 5.5 LangChain Isolation Strategy
+
+LangChain is a framework dependency — in Clean Architecture, frameworks belong in the infrastructure layer only. All LangChain code is wrapped behind ports so the business logic never imports it.
+
+```
+✅ CORRECT — LangChain only in infrastructure
+  application/ports/document_loader.py  →  DocumentLoaderPort (abstract)
+  infrastructure/document_loaders/langchain_loader.py  →  LangChainDocumentLoader (concrete)
+
+  # Use case code:
+  def __init__(self, loader: DocumentLoaderPort):  # knows nothing about LangChain
+      self._loader = loader
+
+❌ WRONG — LangChain leaking into application
+  application/use_cases/ingest_document.py  →  from langchain import PyMuPDFLoader
+```
+
+**Why this matters:**
+- Swap LangChain for something else (naive loaders, custom PDF parser) without touching use cases
+- Unit test use cases with a fake loader that returns canned text
+- LangChain's version upgrades affect only the infrastructure adapter
+
 ---
 
 ## 6. API Design Summary
 
-(See `docs/API.md` for full details)
+(See `docs/API.md` for full details.)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/chat` | Send message, get streamed RAG response |
-| POST | `/api/documents` | Upload a document (.md, .pdf) |
-| GET | `/api/documents` | List all uploaded documents |
-| DELETE | `/api/documents/{doc_id}` | Delete a document and its embeddings |
-| GET | `/api/health` | Health check (Ollama + ChromaDB status) |
+The REST contract is unchanged by Clean Architecture — only the internal implementation structure changes. Controllers live in `interfaces/api/` and are thin delegates to use cases.
+
+| Method | Endpoint | Description | Interface Controller |
+|--------|----------|-------------|---------------------|
+| POST | `/api/chat` | Send message, get streamed RAG response | `interfaces/api/chat.py` |
+| POST | `/api/documents` | Upload a document (.md, .pdf) | `interfaces/api/documents.py` |
+| GET | `/api/documents` | List all uploaded documents | `interfaces/api/documents.py` |
+| DELETE | `/api/documents/{doc_id}` | Delete a document and its embeddings | `interfaces/api/documents.py` |
+| GET | `/api/health` | Health check (Ollama + ChromaDB status) | `interfaces/api/health.py` |
 
 ---
 
@@ -227,11 +345,14 @@ All config via environment variables (with `.env` file support):
 | `OLLAMA_MODEL` | `llama3.1` | Model name in Ollama |
 | `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | HuggingFace embedding model |
 | `CHROMA_PERSIST_DIR` | `./data/chroma_db` | ChromaDB storage path |
+| `CHROMA_COLLECTION_NAME` | `vector_vault_chunks` | Collection for vector chunks |
+| `CHROMA_META_COLLECTION` | `vector_vault_docs` | Collection for document metadata |
 | `UPLOAD_DIR` | `./data/uploads` | Uploaded files storage |
 | `CHUNK_SIZE` | `512` | Text splitter chunk size |
 | `CHUNK_OVERLAP` | `50` | Text splitter overlap |
 | `TOP_K` | `5` | Number of chunks to retrieve |
 | `SCORE_THRESHOLD` | `0.7` | Minimum similarity score |
+| `MAX_UPLOAD_SIZE_MB` | `50` | Maximum file upload size |
 | `CORS_ORIGINS` | `http://localhost:5173` | Allowed frontend origins |
 
 ---
@@ -277,41 +398,147 @@ axios or fetch wrapper
 
 ---
 
-## 9. Development Phases
+## 9. Dependency Injection & Composition Root
 
-### Phase 1 — MVP (Chat-based RAG)
+The `main.py` and `dependencies.py` files form the **composition root** — the single place where objects are created and wired together. This follows the "assemble at the boundaries, inject inward" principle.
 
-- [ ] Backend: FastAPI skeleton + config
-- [ ] Backend: Document upload endpoint + file storage
-- [ ] Backend: Document ingestion pipeline (load → split → embed → store)
-- [ ] Backend: Retrieval service (query embed → ChromaDB search)
-- [ ] Backend: Generation service (Ollama integration)
-- [ ] Backend: Chat endpoint with SSE streaming
-- [ ] Backend: Health check endpoint
-- [ ] Frontend: Vue 3 + Vite project scaffold
-- [ ] Frontend: Chat UI (message list + input)
-- [ ] Frontend: Document upload (drag & drop)
-- [ ] Frontend: Document list view
-- [ ] Frontend: Streaming response rendering
+### 9.1 Wiring Pattern
+
+```python
+# main.py — Composition Root
+from app.config import get_settings
+from app.infrastructure.vector_store.chromadb_adapter import ChromaDBVectorStore
+from app.infrastructure.embedding.hf_sentence_adapter import SentenceTransformerEmbedding
+from app.infrastructure.llm.ollama_adapter import OllamaLLM
+from app.application.use_cases.ingest_document import IngestDocumentUseCase
+from app.application.use_cases.answer_question import AnswerQuestionUseCase
+# ... other imports
+
+settings = get_settings()
+
+# 1. Instantiate infrastructure (adapters)
+vector_store = ChromaDBVectorStore(settings.chroma_persist_dir, settings.chroma_collection_name)
+embedder = SentenceTransformerEmbedding(settings.embedding_model)
+llm = OllamaLLM(settings.ollama_base_url, settings.ollama_model)
+doc_repo = ChromaDBDocumentRepository(vector_store.client, settings.chroma_meta_collection)
+file_storage = LocalFileStorage(settings.upload_dir)
+loader = LangChainDocumentLoader()
+splitter = LangChainTextSplitter(chunk_size=settings.chunk_size, chunk_overlap=settings.chunk_overlap)
+
+# 2. Instantiate use cases (inject adapters)
+ingest_use_case = IngestDocumentUseCase(doc_repo, file_storage, loader, splitter, embedder, vector_store)
+answer_use_case = AnswerQuestionUseCase(embedder, vector_store, llm)
+list_use_case = ListDocumentsUseCase(doc_repo)
+delete_use_case = DeleteDocumentUseCase(vector_store, doc_repo, file_storage)
+health_use_case = HealthCheckUseCase(llm, vector_store, embedder)
+
+# 3. Inject into FastAPI app
+app = create_app(
+    ingest_use_case, answer_use_case, list_use_case, delete_use_case, health_use_case
+)
+```
+
+### 9.2 FastAPI DI Pattern
+
+```python
+# dependencies.py — FastAPI dependency providers
+
+from typing import Callable, TypeVar, cast
+
+_use_cases: dict[str, object] = {}
+
+def register_use_cases(**kwargs) -> None:
+    _use_cases.update(kwargs)
+
+def get_use_case(use_case_class):
+    """Returns a FastAPI Depends callable for a given use case class."""
+    async def dependency():
+        return _use_cases[use_case_class.__name__]
+    return dependency
+
+# Usage in controller:
+# @router.post("/chat")
+# async def chat(
+#     body: ChatRequest,
+#     answer_uc: AnswerQuestionUseCase = Depends(get_use_case(AnswerQuestionUseCase)),
+# ):
+#     ...
+```
+
+---
+
+## 10. Development Phases
+
+### Phase 0 — Scaffold
+
+- [ ] Project directory structure (all `__init__.py` files, package layout)
+- [ ] `config.py` with pydantic-settings
+- [ ] `requirements.txt` with all dependencies
+
+### Phase 1 — Domain Layer (zero external deps)
+
+- [ ] `domain/documents.py` — Document entity, DocumentType enum, DocumentStatus enum
+- [ ] `domain/chunks.py` — Chunk entity, SearchResult value object
+- [ ] `domain/conversations.py` — Conversation, Message (skeleton for Phase 5)
+
+### Phase 2 — Application Layer (ports + use cases + DTOs)
+
+- [ ] `application/ports/` — All 7 abstract port interfaces
+- [ ] `application/dto/` — Input/output dataclasses for each use case
+- [ ] `application/use_cases/` — All 5 use case classes (constructor DI, no infrastructure imports)
+- [ ] **Unit tests for use cases** — mock all ports, verify orchestration logic
+
+### Phase 3 — Infrastructure Layer (adapters)
+
+- [ ] `infrastructure/vector_store/chromadb_adapter.py` — ChromaDBVectorStore
+- [ ] `infrastructure/embedding/hf_sentence_adapter.py` — SentenceTransformerEmbedding
+- [ ] `infrastructure/llm/ollama_adapter.py` — OllamaLLM with SSE streaming
+- [ ] `infrastructure/document_loaders/langchain_loader.py` — LangChain wrapper
+- [ ] `infrastructure/text_splitter/langchain_splitter.py` — Text splitter wrapper
+- [ ] `infrastructure/file_storage/local_storage.py` — LocalFileStorage
+- [ ] `infrastructure/document_repo/chromadb_repository.py` — ChromaDBDocumentRepository
+- [ ] **Integration tests for adapters** — verify real ChromaDB/Ollama connections
+
+### Phase 4 — Interface Layer (controllers + serializers)
+
+- [ ] `interfaces/serializers/` — Pydantic request/response schemas (separate from domain)
+- [ ] `interfaces/api/chat.py` — Thin controller, delegates to AnswerQuestionUseCase
+- [ ] `interfaces/api/documents.py` — Thin controllers for upload/list/delete
+- [ ] `interfaces/api/health.py` — Health check endpoint
+- [ ] `interfaces/api/router.py` — Aggregated router
+- [ ] `dependencies.py` — FastAPI DI providers returning use case instances
+- [ ] `main.py` — Composition root: wire adapters → use cases → DI → start uvicorn
+- [ ] **E2E tests** — FastAPI TestClient with real adapters
+
+### Phase 5 — Frontend
+
+- [ ] Vue 3 + Vite project scaffold
+- [ ] `api/client.ts` — Axios/fetch wrapper for backend
+- [ ] `components/ChatMessage.vue` — Single message bubble
+- [ ] `components/ChatInput.vue` — Message input bar with send
+- [ ] `components/DocumentUpload.vue` — Drag & drop file upload
+- [ ] `components/DocumentList.vue` — List uploaded documents
+- [ ] `views/ChatView.vue` — Main chat page
+- [ ] Streaming response rendering (parse SSE token by token)
 - [ ] Integration: End-to-end test with sample documents
 
-### Phase 2 — Polish & Robustness
+### Phase 6 — Polish & Robustness
 
-- [ ] Error handling and validation
+- [ ] Error handling and validation across all layers
 - [ ] Document re-ingestion / update support
-- [ ] Chat history persistence (SQLite or local JSON)
-- [ ] Source citation in responses (which document/chunk)
+- [ ] Chat history persistence (SQLite or local JSON, via new `ConversationRepositoryPort`)
+- [ ] Source citation in responses (which document/chunk, sent in SSE `done` event)
 - [ ] Rate limiting / queue for LLM calls
 - [ ] Dark mode / theming
 
-### Phase 3 — Desktop App
+### Phase 7 — Desktop App
 
 - [ ] Tauri wrapper (Rust backend, webview frontend)
 - [ ] System tray / background running
 - [ ] Auto-start on login (optional)
 - [ ] Native file dialogs via Tauri APIs
 
-### Phase 4 — Hybrid UI (Document Browser)
+### Phase 8 — Hybrid UI (Document Browser)
 
 - [ ] Document browser sidebar
 - [ ] Document preview (markdown render, PDF viewer)
@@ -320,7 +547,7 @@ axios or fetch wrapper
 
 ---
 
-## 10. WSL Development Notes
+## 11. WSL Development Notes
 
 Since you're developing on WSL:
 
@@ -332,12 +559,15 @@ Since you're developing on WSL:
 
 ---
 
-## 11. Key Risks & Mitigations
+## 12. Key Risks & Mitigations
 
 | Risk | Mitigation |
 |------|------------|
-| LLM quality too low for 8B model | Can swap to larger model; prompt engineering helps |
-| ChromaDB doesn't scale to large corpus | ChromaDB handles 100K+ documents; switch to Qdrant later if needed |
-| Embedding model too small for domain | all-MiniLM is general-purpose; can swap to fine-tuned model |
-| PDF parsing quality varies | PyMuPDF is best open-source option; add fallback parsers later |
-| WSL networking quirks with Ollama | Use `host.docker.internal` or run Ollama in WSL directly |
+| LLM quality too low for 8B model | Can swap to larger model; prompt engineering helps. Trivial to swap adapter. |
+| ChromaDB doesn't scale to large corpus | ChromaDB handles 100K+ documents; behind `VectorStorePort`, switching to Qdrant means writing one new adapter. |
+| Embedding model too small for domain | all-MiniLM is general-purpose; can swap to fine-tuned model by changing the adapter. |
+| PDF parsing quality varies | PyMuPDF is best open-source option; `DocumentLoaderPort` allows fallback parsers. |
+| WSL networking quirks with Ollama | Use `host.docker.internal` or run Ollama in WSL directly. `OllamaLLM` adapter takes a configurable URL. |
+| Clean Architecture over-engineering for small app | The port/adapter abstraction adds files but prevents lock-in. MVP is small but the knowledge base grows; architecture stays solid. |
+| LangChain API breaking changes | Only the `langchain_loader.py` and `langchain_splitter.py` adapters break. Use cases and domain are unaffected. |
+| Sprint slowdown from extra abstraction | Each adapter is a thin wrapper (~30-50 lines). The real work is in use cases. Abstraction cost is low, refactoring cost avoided is high. |
