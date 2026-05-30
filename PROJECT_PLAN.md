@@ -111,7 +111,6 @@ vector-vault/
 │   │   ├── application/                # Unit tests — use cases with mocked ports
 │   │   ├── infrastructure/             # Integration tests — real adapters
 │   │   └── interfaces/                 # E2E tests — FastAPI TestClient
-│   ├── requirements.txt
 │   └── pyproject.toml
 ├── frontend/
 │   ├── src/
@@ -359,7 +358,7 @@ All config via environment variables (with `.env` file support):
 
 ## 8. Dependencies
 
-### Backend (`requirements.txt`)
+### Backend (`pyproject.toml`)
 
 ```
 fastapi>=0.110.0
@@ -473,7 +472,7 @@ def get_use_case(use_case_class):
 
 - [ ] Project directory structure (all `__init__.py` files, package layout)
 - [ ] `config.py` with pydantic-settings
-- [ ] `requirements.txt` with all dependencies
+- [ ] `pyproject.toml` dependencies with all packages added via uv add
 
 ### Phase 1 — Domain Layer (zero external deps)
 

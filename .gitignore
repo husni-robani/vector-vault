@@ -1,5 +1,6 @@
 # --- OpenCode tooling (local config, not part of project) ---
 .opencode/
+opencode.json
 # --- Python (backend) ---
 __pycache__/
 *.py[cod]
