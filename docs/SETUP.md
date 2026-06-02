@@ -1,5 +1,7 @@
 # Vector Vault — Setup & Configuration Guide
 
+> **Architecture:** The backend follows Clean Architecture (Ports & Adapters). Layers from inner to outer: `domain/` (entities) → `application/` (use cases, ports) → `infrastructure/` (adapters) → `interfaces/` (API controllers). The entry point `main.py` is the composition root where all dependencies are wired together. See `PROJECT_PLAN.md` for the full architecture guide.
+
 ## Prerequisites
 
 | Tool | Version | Install |
@@ -96,7 +98,8 @@ EMBEDDING_MODEL=all-MiniLM-L6-v2
 
 # ChromaDB Configuration
 CHROMA_PERSIST_DIR=./data/chroma_db
-CHROMA_COLLECTION_NAME=vector_vault
+CHROMA_COLLECTION_NAME=vector_vault_chunks
+CHROMA_META_COLLECTION=vector_vault_docs
 
 # Upload Configuration
 UPLOAD_DIR=./data/uploads
@@ -121,9 +124,48 @@ CORS_ORIGINS=http://localhost:5173
 ```bash
 # Development (with hot reload)
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-# Or run directly
-python -m app.main
+### Project Layer Reference
+
+When navigating the codebase, use this map:
+
+| Directory | What lives here | Depends on |
+|-----------|----------------|------------|
+| `app/domain/` | Document, Chunk entities | Nothing |
+| `app/application/ports/` | Abstract interfaces (ABCs) | domain |
+| `app/application/use_cases/` | Business logic orchestrators | ports + domain |
+| `app/application/dto/` | Use case input/output (dataclasses) | Nothing |
+| `app/infrastructure/` | Concrete adapters (ChromaDB, Ollama, LangChain) | ports (implements them) |
+| `app/interfaces/api/` | FastAPI route handlers (thin controllers) | use_cases |
+| `app/interfaces/serializers/` | Pydantic request/response schemas | Nothing |
+| `app/main.py` | Composition root (DI assembly) | Everything |
+| `app/dependencies.py` | FastAPI DI providers | use_cases |
+| `tests/domain/` | Entity unit tests | domain |
+| `tests/application/` | Use case tests (mock ports) | use_cases |
+| `tests/infrastructure/` | Adapter integration tests | adapters |
+| `tests/interfaces/` | E2E API tests | FastAPI app |
+
+### Running Tests by Layer
+
+```bash
+cd vector-vault/backend
+pip install pytest pytest-asyncio
+
+# Unit tests (domain) — no external deps, always fast
+pytest tests/domain/
+
+# Unit tests (application) — mock all ports, fast
+pytest tests/application/
+
+# Integration tests (infrastructure) — needs real ChromaDB & Ollama
+pytest tests/infrastructure/
+
+# E2E tests (interfaces) — full FastAPI test client
+pytest tests/interfaces/
+
+# Run all
+pytest
 ```
 
 The API docs will be available at: `http://localhost:8000/docs` (Swagger UI)

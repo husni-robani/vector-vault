@@ -2,6 +2,8 @@
 
 Base URL: `http://localhost:8000/api`
 
+> **Backend Architecture:** The API implementation follows Clean Architecture. Controllers live in `app/interfaces/api/`, request/response schemas in `app/interfaces/serializers/`. Controllers are thin delegates — they parse HTTP input into use case DTOs, call the appropriate use case, and serialize the response. No business logic lives in the controller layer.
+
 All request/response bodies are JSON. Chat response uses Server-Sent Events for streaming.
 
 ---
