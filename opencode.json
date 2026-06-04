@@ -10,7 +10,7 @@
             "model": "opencode-go/deepseek-v4-pro"
         },
         "plan": {
-            "model": "moonshot/kimi-k2.6"
+            "model": "opencode-go/qwen3.6-plus"
         },
         "project-manager": {
             "mode": "primary",
