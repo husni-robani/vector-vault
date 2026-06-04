@@ -79,7 +79,7 @@ vector-vault/
 │   │   │   │   └── ollama_adapter.py   # OllamaLLM : LLMPort
 │   │   │   ├── document_repo/
 │   │   │   │   ├── __init__.py
-│   │   │   │   └── chromadb_repository.py # ChromaDBDocumentRepository : DocumentRepositoryPort
+│   │   │   │   └── sqlite_repository.py   # SQLiteDocumentRepository : DocumentRepositoryPort
 │   │   │   ├── file_storage/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── local_storage.py    # LocalFileStorage : FileStoragePort
@@ -253,7 +253,7 @@ Each port defines what the application needs. Defined as an abstract class with 
 | `DocumentLoaderPort` | Load file into raw text | `load(path) → str` | `LangChainDocumentLoader` |
 | `TextSplitterPort` | Split text into chunks | `split(text) → list[str]` | `LangChainTextSplitter` |
 | `FileStoragePort` | Save/delete raw files | `save(name, bytes) → path`, `delete(path)` | `LocalFileStorage` |
-| `DocumentRepositoryPort` | Persist document metadata | `save(doc)`, `find_all()`, `delete(id)` | `ChromaDBDocumentRepository` |
+| `DocumentRepositoryPort` | Persist document metadata | `save(doc)`, `find_all()`, `find_by_id(id)`, `delete(id)` | `SQLiteDocumentRepository` |
 
 ### 5.2 Adapters (Concrete Implementations — `infrastructure/`)
 
@@ -267,7 +267,7 @@ LangChain lives **only** in the infrastructure layer, wrapped behind ports:
 | `LangChainDocumentLoader` | `DocumentLoaderPort` | `UnstructuredMarkdownLoader`, `PyMuPDFLoader` | Routes by file extension |
 | `LangChainTextSplitter` | `TextSplitterPort` | `RecursiveCharacterTextSplitter` | chunk_size=512, overlap=50 |
 | `LocalFileStorage` | `FileStoragePort` | `pathlib`, `shutil` | Saves to `data/uploads/` |
-| `ChromaDBDocumentRepository` | `DocumentRepositoryPort` | ChromaDB metadata collection | Stores doc metadata as ChromaDB metadata |
+| `SQLiteDocumentRepository` | `DocumentRepositoryPort` | `sqlite3` (stdlib) | Embedded, zero deps, relational integrity |
 
 ### 5.3 Use Cases (`application/use_cases/`)
 
@@ -345,7 +345,7 @@ All config via environment variables (with `.env` file support):
 | `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | HuggingFace embedding model |
 | `CHROMA_PERSIST_DIR` | `./data/chroma_db` | ChromaDB storage path |
 | `CHROMA_COLLECTION_NAME` | `vector_vault_chunks` | Collection for vector chunks |
-| `CHROMA_META_COLLECTION` | `vector_vault_docs` | Collection for document metadata |
+| `SQLITE_DB_PATH` | `./data/vault.db` | SQLite database path |
 | `UPLOAD_DIR` | `./data/uploads` | Uploaded files storage |
 | `CHUNK_SIZE` | `512` | Text splitter chunk size |
 | `CHUNK_OVERLAP` | `50` | Text splitter overlap |
@@ -419,7 +419,7 @@ settings = get_settings()
 vector_store = ChromaDBVectorStore(settings.chroma_persist_dir, settings.chroma_collection_name)
 embedder = SentenceTransformerEmbedding(settings.embedding_model)
 llm = OllamaLLM(settings.ollama_base_url, settings.ollama_model)
-doc_repo = ChromaDBDocumentRepository(vector_store.client, settings.chroma_meta_collection)
+doc_repo = SQLiteDocumentRepository(settings.sqlite_db_path)
 file_storage = LocalFileStorage(settings.upload_dir)
 loader = LangChainDocumentLoader()
 splitter = LangChainTextSplitter(chunk_size=settings.chunk_size, chunk_overlap=settings.chunk_overlap)
@@ -495,7 +495,7 @@ def get_use_case(use_case_class):
 - [ ] `infrastructure/document_loaders/langchain_loader.py` — LangChain wrapper
 - [ ] `infrastructure/text_splitter/langchain_splitter.py` — Text splitter wrapper
 - [ ] `infrastructure/file_storage/local_storage.py` — LocalFileStorage
-- [ ] `infrastructure/document_repo/chromadb_repository.py` — ChromaDBDocumentRepository
+- [ ] `infrastructure/document_repo/sqlite_repository.py` — SQLiteDocumentRepository
 - [ ] **Integration tests for adapters** — verify real ChromaDB/Ollama connections
 
 ### Phase 4 — Interface Layer (controllers + serializers)
