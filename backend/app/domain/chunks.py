@@ -11,3 +11,8 @@ class Chunk:
     embedding: list[float]
     document: str
     metadata: MetaData
+
+@dataclass
+class SearchResult:
+    chunk: Chunk
+    score: float
