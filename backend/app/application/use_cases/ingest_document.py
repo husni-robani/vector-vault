@@ -33,6 +33,7 @@ class IngestDocumentUseCase:
             id=str(uuid4()),
             title=Path(document_dto.filename).stem,
             filename=document_dto.filename,
+            file_path=file_path,
             file_type=DocumentType.from_filename(document_dto.filename),
             status=DocumentStatus.PROCESSED,
             created_at=str(datetime.now()),

@@ -24,6 +24,7 @@ class Document:
     id: str # uuid
     title: str
     filename: str
+    file_path: str
     file_type: DocumentType
     status: DocumentStatus
     created_at: str
