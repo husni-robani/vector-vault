@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from domain.documents import Document
+from app.domain.documents import Document
 
 
 class DocumentRepositoryPort(ABC):

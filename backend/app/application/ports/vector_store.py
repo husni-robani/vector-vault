@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from domain.chunks import Chunk, SearchResult
-from dto import VectorStoreHealth
+from app.domain.chunks import Chunk, SearchResult
+from app.application.dto import VectorStoreHealth
 
 
 class VectorStorePort(ABC):

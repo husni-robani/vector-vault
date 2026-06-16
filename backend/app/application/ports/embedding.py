@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from dto import EmbeddingHealth
+from app.application.dto import EmbeddingHealth
 
 
 class EmbeddingPort(ABC):

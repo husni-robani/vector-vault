@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
-from dto import LLMHealth
+from app.application.dto import LLMHealth
 
 
 class LLMPort(ABC):
