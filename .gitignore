@@ -24,3 +24,6 @@ backend/data/uploads/
 
 # env
 .env
+
+# --- Test artifacts ---
+.coverage
