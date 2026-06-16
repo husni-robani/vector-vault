@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from domain.chunks import Chunk, SearchResult
+from dto import VectorStoreHealth
 
 
 class VectorStorePort(ABC):
@@ -34,5 +35,17 @@ class VectorStorePort(ABC):
 
         Args:
             document_id: The document whose chunks should be deleted.
+        """
+        pass
+
+    @abstractmethod
+    def health_check(self) -> VectorStoreHealth:
+        """Verify the vector store is operational.
+
+        Adapters should call the store's built-in health endpoint
+        (e.g. ChromaDB's client.heartbeat()) and report the current
+        number of collections. Return VectorStoreHealth(connected=True,
+        collections_count=<int>) on success, or connected=False with an
+        error message on failure.
         """
         pass
