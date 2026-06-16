@@ -8,7 +8,6 @@ class MetaData:
 @dataclass
 class Chunk:
     id: str
-    embedding: list[float]
     document: str
     metadata: MetaData
 
