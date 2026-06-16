@@ -470,22 +470,22 @@ def get_use_case(use_case_class):
 
 ### Phase 0 — Scaffold
 
-- [ ] Project directory structure (all `__init__.py` files, package layout)
-- [ ] `config.py` with pydantic-settings
-- [ ] `pyproject.toml` dependencies with all packages added via uv add
+- [x] Project directory structure (all `__init__.py` files, package layout)
+- [x] `config.py` with pydantic-settings
+- [x] `pyproject.toml` dependencies with all packages added via uv add
 
 ### Phase 1 — Domain Layer (zero external deps)
 
-- [ ] `domain/documents.py` — Document entity, DocumentType enum, DocumentStatus enum
-- [ ] `domain/chunks.py` — Chunk entity, SearchResult value object
-- [ ] `domain/conversations.py` — Conversation, Message (skeleton for Phase 5)
+- [x] `domain/documents.py` — Document entity, DocumentType enum, DocumentStatus enum
+- [x] `domain/chunks.py` — Chunk entity, SearchResult value object
+- [x] `domain/conversations.py` — Conversation, Message (skeleton for Phase 5)
 
 ### Phase 2 — Application Layer (ports + use cases + DTOs)
 
-- [ ] `application/ports/` — All 7 abstract port interfaces
-- [ ] `application/dto/` — Input/output dataclasses for each use case
-- [ ] `application/use_cases/` — All 5 use case classes (constructor DI, no infrastructure imports)
-- [ ] **Unit tests for use cases** — mock all ports, verify orchestration logic
+- [x] `application/ports/` — All 7 abstract port interfaces
+- [x] `application/dto/` — Input/output dataclasses for each use case
+- [x] `application/use_cases/` — All 5 use case classes (constructor DI, no infrastructure imports)
+- [x] **Unit tests for use cases** — mock all ports, verify orchestration logic
 
 ### Phase 3 — Infrastructure Layer (adapters)
 
