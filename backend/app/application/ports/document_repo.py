@@ -24,7 +24,7 @@ class DocumentRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def find_by_id(self, id: str) -> Document:
+    def find_by_id(self, id: str) -> Document | None:
         """Look up a single document by its unique ID.
 
         Args:
