@@ -485,7 +485,7 @@ def get_use_case(use_case_class):
 - [x] `application/ports/` — All 7 abstract port interfaces
 - [x] `application/dto/` — Input/output dataclasses for each use case
 - [x] `application/use_cases/` — All 5 use case classes (constructor DI, no infrastructure imports)
-- [ ] **Unit tests for use cases** — mock all ports, verify orchestration logic
+- [x] **Unit tests for use cases** — mock all ports, verify orchestration logic
 
 ### Phase 3 — Infrastructure Layer (adapters)
 
