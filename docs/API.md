@@ -82,14 +82,12 @@ Upload a document (.md or .pdf) for ingestion.
 |-------|------|----------|-------------|
 | `file` | file | yes | .md or .pdf file |
 | `title` | string | no | Custom title (defaults to filename) |
-| `metadata` | string (JSON) | no | Arbitrary JSON metadata string |
 
 **Example (curl):**
 
 ```bash
 curl -X POST http://localhost:8000/api/documents \
-  -F "file=@/path/to/notes.md" \
-  -F 'metadata={"tags": ["personal", "ml"]}'
+  -F "file=@/path/to/notes.md"
 ```
 
 **Response (201 Created):**
@@ -97,15 +95,10 @@ curl -X POST http://localhost:8000/api/documents \
 ```json
 {
   "id": "doc_abc123",
-  "title": "notes.md",
   "filename": "notes.md",
-  "file_type": "md",
-  "chunks_count": 12,
-  "metadata": {
-    "tags": ["personal", "ml"]
-  },
-  "created_at": "2025-01-15T10:30:00Z",
-  "status": "indexed"
+  "file_type": ".md",
+  "title": "notes",
+  "status": "processed"
 }
 ```
 
@@ -141,11 +134,10 @@ List all uploaded documents.
       "id": "doc_abc123",
       "title": "notes.md",
       "filename": "notes.md",
-      "file_type": "md",
+      "file_type": ".md",
       "chunks_count": 12,
-      "metadata": {},
       "created_at": "2025-01-15T10:30:00Z",
-      "status": "indexed",
+      "status": "processed",
       "size_bytes": 4520
     }
   ],

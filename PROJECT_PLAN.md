@@ -56,8 +56,9 @@ vector-vault/
 │   │   │   │   └── text_splitter.py    # TextSplitterPort
 │   │   │   ├── dto/                    # Use case input/output objects (@dataclass)
 │   │   │   │   ├── __init__.py
-│   │   │   │   ├── chat_dto.py
-│   │   │   │   └── documents_dto.py
+│   │   │   │   ├── chat.py
+│   │   │   │   └── documents.py
+│   │   │   │   └── health.py
 │   │   │   └── use_cases/              # Single-responsibility orchestrators
 │   │   │       ├── __init__.py
 │   │   │       ├── ingest_document.py  # IngestDocumentUseCase
@@ -247,9 +248,9 @@ Each port defines what the application needs. Defined as an abstract class with 
 
 | Port | Responsibility | Key Methods | Default Adapter |
 |------|---------------|-------------|-----------------|
-| `EmbeddingPort` | Convert text(s) to vectors | `embed(texts) → list[list[float]]` | `SentenceTransformerEmbedding` |
-| `LLMPort` | Generate text from prompt | `generate(prompt) → AsyncIterator[str]` | `OllamaLLM` |
-| `VectorStorePort` | Store and search embeddings | `add_chunks()`, `search()`, `delete_by_document()` | `ChromaDBVectorStore` |
+| `EmbeddingPort` | Convert text(s) to vectors | `embed(texts) → list[list[float]]`, `health_check()` | `SentenceTransformerEmbedding` |
+| `LLMPort` | Generate text from prompt | `generate(prompt) → AsyncIterator[str]`, `health_check()` | `OllamaLLM` |
+| `VectorStorePort` | Store and search embeddings | `add_chunks()`, `search()`, `delete_by_document()`, `health_check()` | `ChromaDBVectorStore` |
 | `DocumentLoaderPort` | Load file into raw text | `load(path) → str` | `LangChainDocumentLoader` |
 | `TextSplitterPort` | Split text into chunks | `split(text) → list[str]` | `LangChainTextSplitter` |
 | `FileStoragePort` | Save/delete raw files | `save(name, bytes) → path`, `delete(path)` | `LocalFileStorage` |

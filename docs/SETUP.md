@@ -6,7 +6,7 @@
 
 | Tool | Version | Install |
 |------|---------|---------|
-| Python | 3.11+ | `sudo apt install python3.11` |
+| Python | 3.13+ | `sudo apt install python3.11` |
 | Node.js | 18+ | `nvm install 18` or `sudo apt install nodejs` |
 | Ollama | Latest | See below |
 | Git | 2.40+ | `sudo apt install git` |
