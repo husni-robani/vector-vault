@@ -1,6 +1,6 @@
 from app.application.ports import EmbeddingPort, LLMPort, VectorStorePort
 from app.domain.chunks import SearchResult
-from app.application.dto import AnswerQuestionOutput, SourceInfo
+from app.application.dto import AnswerQuestionOutput, SourceInfo, AnswerQuestionInput
 from collections.abc import AsyncIterator
 
 
@@ -21,9 +21,9 @@ class AnswerQuestionUseCase:
         self._llm: LLMPort = llm
         self._vector_store: VectorStorePort = vector_store
 
-    async def execute(self, question: str) -> AnswerQuestionOutput:
+    async def execute(self, input: AnswerQuestionInput) -> AnswerQuestionOutput:
         # embed question
-        question_embeded: list[list[float]] = self._embedder.embed(texts=[question])
+        question_embeded: list[list[float]] = self._embedder.embed(texts=[input.question])
 
         # search
         search_results: list[SearchResult] = self._vector_store.search(
@@ -32,7 +32,7 @@ class AnswerQuestionUseCase:
 
         # build prompt
         prompt: str = self._build_prompt(
-            question=question, search_results=search_results
+            question=input.question, search_results=search_results
         )
 
         # generate response from LLM
@@ -41,7 +41,7 @@ class AnswerQuestionUseCase:
         # build sources metadata
         sources: list[SourceInfo] = [
             SourceInfo(
-                title=result.chunk.metadata.document_id,
+                title=result.chunk.metadata.title,
                 chunk_index=result.chunk.metadata.chunk_index,
                 score=result.score,
                 snippet=result.chunk.document[:100],

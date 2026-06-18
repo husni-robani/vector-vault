@@ -4,6 +4,7 @@ from dataclasses import dataclass
 class MetaData:
     document_id: str # uuid
     chunk_index: int
+    title: str
 
 @dataclass
 class Chunk:

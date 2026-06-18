@@ -2,7 +2,7 @@ from app.application.ports import DocumentRepositoryPort
 from app.domain.documents import Document
 
 
-class ListDocumentUseCase:
+class ListDocumentsUseCase:
     def __init__(self, document_repo: DocumentRepositoryPort) -> None:
         self._document_repo: DocumentRepositoryPort = document_repo
 
