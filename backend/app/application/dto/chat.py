@@ -12,3 +12,7 @@ class SourceInfo:
 class AnswerQuestionOutput:
     token_stream: AsyncIterator[str]
     sources: list[SourceInfo]
+
+@dataclass
+class AnswerQuestionInput:
+    question: str
