@@ -27,5 +27,7 @@ class Document:
     file_path: str
     file_type: DocumentType
     status: DocumentStatus
+    chunks_count: int
+    size_bytes: int
     created_at: str
     updated_at: str
