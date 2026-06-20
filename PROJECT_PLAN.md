@@ -40,8 +40,9 @@ vector-vault/
 │   │   ├── domain/                     # LAYER 0: Entities — zero deps
 │   │   │   ├── __init__.py
 │   │   │   ├── documents.py            # Document, DocumentType, DocumentStatus
-│   │   │   ├── chunks.py               # Chunk, SearchResult
-│   │   │   └── conversations.py        # Conversation, Message (Phase 2)
+│   │   │   ├── chunks.py               # Chunk, SearchResult, MetaData
+│   │   │   ├── conversations.py        # Conversation, Message (Phase 2)
+│   │   │   └── exceptions.py           # VectorVaultError hierarchy
 │   │   │
 │   │   ├── application/                # LAYER 1: Business logic — depends on domain
 │   │   │   ├── __init__.py
@@ -202,7 +203,7 @@ vector-vault/
 │    2. loader: DocumentLoaderPort.load(path) → str                 │
 │    3. splitter: TextSplitterPort.split(text) → list[str]          │
 │    4. embedding: EmbeddingPort.embed(chunks) → list[vector]       │
-│    5. vector_store: VectorStorePort.add_chunks(chunks, vectors)   │
+│    5. vector_store: VectorStorePort.add_chunks(chunks)   │
 │    6. doc_repo: DocumentRepositoryPort.save(Document entity)      │
 │    Returns: IngestDocumentOutput                                  │
 └──────┬─────────┬──────────┬──────────┬──────────┬────────────────┘
@@ -480,6 +481,7 @@ def get_use_case(use_case_class):
 - [x] `domain/documents.py` — Document entity, DocumentType enum, DocumentStatus enum
 - [x] `domain/chunks.py` — Chunk entity, SearchResult value object
 - [x] `domain/conversations.py` — Conversation, Message (skeleton for Phase 5)
+- [x] `domain/exceptions.py` — Custom exception hierarchy (VectorVaultError, NotFoundError, etc.)
 
 ### Phase 2 — Application Layer (ports + use cases + DTOs)
 
@@ -524,7 +526,7 @@ def get_use_case(use_case_class):
 
 ### Phase 6 — Polish & Robustness
 
-- [ ] Error handling and validation across all layers
+- [ ] Error handling and validation across all layers (exception definitions in `domain/exceptions.py` already in place)
 - [ ] Document re-ingestion / update support
 - [ ] Chat history persistence (SQLite or local JSON, via new `ConversationRepositoryPort`)
 - [ ] Source citation in responses (which document/chunk, sent in SSE `done` event)
