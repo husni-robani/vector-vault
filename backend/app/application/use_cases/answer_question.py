@@ -20,7 +20,10 @@ class AnswerQuestionUseCase:
     Answer:"""
 
     def __init__(
-        self, embedder: EmbeddingPort, llm: LLMPort, vector_store: VectorStorePort
+        self, 
+        embedder: EmbeddingPort, 
+        llm: LLMPort, 
+        vector_store: VectorStorePort,
     ) -> None:
         self._embedder: EmbeddingPort = embedder
         self._llm: LLMPort = llm
@@ -45,7 +48,7 @@ class AnswerQuestionUseCase:
 
         # build prompt
         prompt: str = self._build_prompt(
-            question=input.question, search_results=search_results
+            question=input.question, results=search_results
         )
 
         try:
@@ -59,14 +62,14 @@ class AnswerQuestionUseCase:
             SourceInfo(
                 title=result.chunk.metadata.title,
                 chunk_index=result.chunk.metadata.chunk_index,
-                score=result.score,
-                snippet=result.chunk.text[:100],
+                distance=result.distance,
+                snippet=(result.chunk.text or "")[:100],
             )
             for result in search_results
         ]
 
         return AnswerQuestionOutput(token_stream=token_stream, sources=sources)
 
-    def _build_prompt(self, question: str, search_results: list[SearchResult]) -> str:
-        context = "\n\n".join(result.chunk.text for result in search_results)
+    def _build_prompt(self, question: str, results: list[SearchResult]) -> str:
+        context = "\n\n".join(result.chunk.text or "" for result in results)
         return self._PROMPT_TEMPLATE.format(context=context, question=question)
