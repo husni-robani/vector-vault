@@ -352,7 +352,7 @@ All config via environment variables (with `.env` file support):
 | `CHUNK_SIZE` | `512` | Text splitter chunk size |
 | `CHUNK_OVERLAP` | `50` | Text splitter overlap |
 | `TOP_K` | `5` | Number of chunks to retrieve |
-| `SCORE_THRESHOLD` | `0.7` | Minimum similarity score |
+| `DISTANCE_THRESHOLD` | `0.7` | Minimum similarity distance |
 | `MAX_UPLOAD_SIZE_MB` | `50` | Maximum file upload size |
 | `CORS_ORIGINS` | `http://localhost:5173` | Allowed frontend origins |
 
