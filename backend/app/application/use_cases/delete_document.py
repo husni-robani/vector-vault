@@ -1,9 +1,14 @@
+import logging
+
 from app.application.ports import (
     DocumentRepositoryPort,
     VectorStorePort,
     FileStoragePort,
 )
 from app.domain.documents import Document
+from app.domain.exceptions import NotFoundError
+
+logger = logging.getLogger(__name__)
 
 
 class DeleteDocumentUseCase:
@@ -20,7 +25,8 @@ class DeleteDocumentUseCase:
     def execute(self, doc_id: str):
         document: Document | None = self._document_repo.find_by_id(doc_id)
         if document is None:
-            raise ValueError(f"Document {doc_id} not found")
+            logger.warning("Delete failed: document %s not found", doc_id)
+            raise NotFoundError(f"Document {doc_id} not found")
 
         # delete data in sqlite
         self._document_repo.delete(document.id)
