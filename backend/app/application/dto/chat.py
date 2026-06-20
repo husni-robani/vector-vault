@@ -3,10 +3,10 @@ from collections.abc import AsyncIterator
 
 @dataclass
 class SourceInfo:
-    title: str
-    chunk_index: int
-    score: float
-    snippet: str
+    title: str | None
+    chunk_index: int | None
+    distance: float | None
+    snippet: str | None
 
 @dataclass
 class AnswerQuestionOutput:
