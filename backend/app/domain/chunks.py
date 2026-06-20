@@ -2,18 +2,18 @@ from dataclasses import dataclass
 
 @dataclass
 class MetaData:
-    document_id: str # uuid
-    chunk_index: int
-    title: str
+    document_id: str | None # uuid
+    chunk_index: int | None
+    title: str | None
 
 @dataclass
 class Chunk:
     id: str
-    text: str
-    vector: list[float]
+    text: str | None
+    vector: list[float] | None
     metadata: MetaData
 
 @dataclass
 class SearchResult:
     chunk: Chunk
-    score: float
+    distance: float
