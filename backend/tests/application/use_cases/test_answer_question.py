@@ -62,11 +62,11 @@ class TestAnswerQuestion:
         assert len(result.sources) == 2
         assert result.sources[0].title == "doc-1"
         assert result.sources[0].chunk_index == 0
-        assert result.sources[0].score == 0.92
+        assert result.sources[0].distance == 0.92
         assert result.sources[0].snippet == "context text one"
         assert result.sources[1].title == "doc-1"
         assert result.sources[1].chunk_index == 1
-        assert result.sources[1].score == 0.87
+        assert result.sources[1].distance == 0.87
         assert result.sources[1].snippet == "context text two"
 
     @pytest.mark.asyncio

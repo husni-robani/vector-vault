@@ -84,7 +84,7 @@ def sample_search_results():
                 vector=[0.1, 0.2],
                 metadata=MetaData(document_id="doc-1", chunk_index=0, title="doc-1"),
             ),
-            score=0.92,
+            distance=0.92,
         ),
         SearchResult(
             chunk=Chunk(
@@ -93,7 +93,7 @@ def sample_search_results():
                 vector=[0.3, 0.4],
                 metadata=MetaData(document_id="doc-1", chunk_index=1, title="doc-1"),
             ),
-            score=0.87,
+            distance=0.87,
         ),
     ]
 
