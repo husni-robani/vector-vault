@@ -9,7 +9,8 @@ class MetaData:
 @dataclass
 class Chunk:
     id: str
-    document: str
+    text: str
+    vector: list[float]
     metadata: MetaData
 
 @dataclass
