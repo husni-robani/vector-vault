@@ -7,12 +7,11 @@ class VectorStorePort(ABC):
     """Store and search vector embeddings for document chunks."""
 
     @abstractmethod
-    def add_chunks(self, chunks: list[Chunk], vectors: list[list[float]]):
+    def add_chunks(self, chunks: list[Chunk]):
         """Index chunks with their corresponding embedding vectors.
 
         Args:
-            chunks: Chunk entities containing text and metadata.
-            vectors: Embedding vectors, one per chunk in the same order.
+            chunks: Chunk entities containing id, text, vector and metadata.
         """
         pass
 
