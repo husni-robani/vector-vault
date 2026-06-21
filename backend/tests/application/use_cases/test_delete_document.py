@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import call
 from app.application.use_cases.delete_document import DeleteDocumentUseCase
 from app.domain.exceptions import NotFoundError
+from pathlib import Path
 
 
 class TestDeleteDocument:
@@ -18,7 +19,9 @@ class TestDeleteDocument:
         mock_document_repo.find_by_id.assert_called_once_with(sample_document.id)
         mock_document_repo.delete.assert_called_once_with(sample_document.id)
         mock_vector_store.delete_by_document.assert_called_once_with(sample_document.id)
-        mock_file_storage.delete.assert_called_once_with(sample_document.file_path)
+        mock_file_storage.delete.assert_called_once_with(
+            Path(sample_document.file_path)
+        )
 
     def test_execute_calls_delete_in_correct_order(
         self, mock_document_repo, mock_vector_store, mock_file_storage, sample_document
