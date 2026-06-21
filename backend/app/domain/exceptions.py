@@ -9,10 +9,8 @@ class NotFoundError(VectorVaultError):
 class UnsupportedFileTypeError(VectorVaultError):
     pass
 
-
-class DocumentProcessingError(VectorVaultError):
+class ExternalServiceError(VectorVaultError):
     pass
 
-
-class ExternalServiceError(VectorVaultError):
+class FileAlreadyExistsError(VectorVaultError):
     pass
