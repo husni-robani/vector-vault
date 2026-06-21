@@ -210,6 +210,20 @@ Check system health: Ollama connectivity and ChromaDB status.
 
 ---
 
+## Exception Hierarchy
+
+Custom exceptions defined in `domain/exceptions.py` map to HTTP status codes at the interface layer:
+
+| Exception | HTTP Status | Typical Condition |
+|-----------|-------------|-------------------|
+| `NotFoundError` | 404 | Document or resource not found |
+| `UnsupportedFileTypeError` | 400 | Uploaded file is not .md or .pdf |
+| `DocumentProcessingError` | 500 | Failure during ingestion or processing |
+| `ExternalServiceError` | 503 | Ollama, ChromaDB, or embedding service unreachable |
+| `VectorVaultError` | 500 | Catch-all base exception |
+
+---
+
 ## Frontend → Backend Integration
 
 ### CORS Configuration

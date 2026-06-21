@@ -132,7 +132,7 @@ When navigating the codebase, use this map:
 
 | Directory | What lives here | Depends on |
 |-----------|----------------|------------|
-| `app/domain/` | Document, Chunk entities | Nothing |
+| `app/domain/` | Document, Chunk entities, custom exceptions | Nothing |
 | `app/application/ports/` | Abstract interfaces (ABCs) | domain |
 | `app/application/use_cases/` | Business logic orchestrators | ports + domain |
 | `app/application/dto/` | Use case input/output (dataclasses) | Nothing |

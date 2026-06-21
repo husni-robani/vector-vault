@@ -1,3 +1,5 @@
+import logging
+
 from app.application.ports import (
     DocumentLoaderPort,
     DocumentRepositoryPort,
@@ -9,9 +11,12 @@ from app.application.ports import (
 from app.application.dto import IngestDocumentInput, IngestDocumentOutput
 from app.domain.chunks import Chunk, MetaData
 from app.domain.documents import Document, DocumentStatus, DocumentType
+from app.domain.exceptions import DocumentProcessingError
 from uuid import uuid4
 from datetime import datetime
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class IngestDocumentUseCase:
@@ -70,23 +75,27 @@ class IngestDocumentUseCase:
             chunks: list[Chunk] = [
                 Chunk(
                     id=str(uuid4()),
-                    document=chunk_text,
-                    metadata=MetaData(document_id=document_data.id, chunk_index=i, title=Path(document_dto.filename).stem),
+                    text=text,
+                    vector=vector,
+                    metadata=MetaData(
+                        document_id=document_data.id,
+                        chunk_index=i,
+                        title=Path(document_dto.filename).stem,
+                    ),
                 )
-                for i, chunk_text in enumerate(chunks_text)
+                for i, (text, vector) in enumerate(zip(chunks_text, chunks_vector))
             ]
             # store to chroma db
-            self._vector_store.add_chunks(chunks=chunks, vectors=chunks_vector)
-        except Exception:
+            self._vector_store.add_chunks(chunks=chunks)
+        except Exception as e:
+            logger.exception(
+                "Document processing failed for '%s'", document_dto.filename
+            )
             document_data.status = DocumentStatus.ERROR
             self._doc_repo.save(document_data)
-            return IngestDocumentOutput(
-                id=document_data.id,
-                filename=document_data.filename,
-                status=document_data.status,
-                file_type=document_data.file_type,
-                title=document_data.title
-            )
+            raise DocumentProcessingError(
+                f"Failed to process '{document_dto.filename}'"
+            ) from e
 
         # 4. store document data to sqlite
         document_data.chunks_count = len(chunks_text)
@@ -98,5 +107,5 @@ class IngestDocumentUseCase:
             filename=document_data.filename,
             status=document_data.status,
             file_type=document_data.file_type,
-            title=document_data.title
+            title=document_data.title,
         )
