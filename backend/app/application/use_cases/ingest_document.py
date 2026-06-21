@@ -11,7 +11,6 @@ from app.application.ports import (
 from app.application.dto import IngestDocumentInput, IngestDocumentOutput
 from app.domain.chunks import Chunk, MetaData
 from app.domain.documents import Document, DocumentStatus, DocumentType
-from app.domain.exceptions import DocumentProcessingError
 from uuid import uuid4
 from datetime import datetime
 from pathlib import Path
@@ -63,7 +62,7 @@ class IngestDocumentUseCase:
             updated_at=str(datetime.now()),
         )
 
-        # 3. Chunk Process
+        # 3. Chunk Process & save document data
         try:
             # split the file
             chunks_text: list[str] = self._splitter.split(content_str)
@@ -87,20 +86,25 @@ class IngestDocumentUseCase:
             ]
             # store to chroma db
             self._vector_store.add_chunks(chunks=chunks)
-        except Exception as e:
+
+            # store document data to sqlite
+            document_data.chunks_count = len(chunks_text)
+
+            self._doc_repo.save(document_data)
+        except Exception:
             logger.exception(
                 "Document processing failed for '%s'", document_dto.filename
             )
+
+            # delete the stored file
+            self._file_storage.delete(Path(file_path))
+
+            # set document_status as error
             document_data.status = DocumentStatus.ERROR
+
             self._doc_repo.save(document_data)
-            raise DocumentProcessingError(
-                f"Failed to process '{document_dto.filename}'"
-            ) from e
-
-        # 4. store document data to sqlite
-        document_data.chunks_count = len(chunks_text)
-
-        self._doc_repo.save(document_data)
+            
+            raise
 
         return IngestDocumentOutput(
             id=document_data.id,

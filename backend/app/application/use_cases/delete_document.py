@@ -7,6 +7,7 @@ from app.application.ports import (
 )
 from app.domain.documents import Document
 from app.domain.exceptions import NotFoundError
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -35,4 +36,5 @@ class DeleteDocumentUseCase:
         self._vector_store.delete_by_document(document.id)
 
         # delete the file
-        self._file_storage.delete(document.file_path)
+        target_file = Path(document.file_path)
+        self._file_storage.delete(target_file)

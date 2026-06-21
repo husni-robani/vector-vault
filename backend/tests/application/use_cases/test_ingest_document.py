@@ -3,7 +3,6 @@ from unittest.mock import call
 from app.application.use_cases.ingest_document import IngestDocumentUseCase
 from app.application.dto import IngestDocumentInput
 from app.domain.documents import DocumentStatus
-from app.domain.exceptions import DocumentProcessingError
 
 
 class TestIngestDocument:
@@ -142,7 +141,7 @@ class TestIngestDocument:
             filename="test.md", title="test", content=b"file content bytes"
         )
 
-        with pytest.raises(DocumentProcessingError):
+        with pytest.raises(RuntimeError):
             uc.execute(dto)
 
         mock_document_repo.save.assert_called_once()
@@ -172,7 +171,7 @@ class TestIngestDocument:
             filename="test.md", title="test", content=b"file content bytes"
         )
 
-        with pytest.raises(DocumentProcessingError):
+        with pytest.raises(RuntimeError):
             uc.execute(dto)
 
         mock_document_repo.save.assert_called_once()
@@ -200,7 +199,7 @@ class TestIngestDocument:
             filename="test.md", title="test", content=b"file content bytes"
         )
 
-        with pytest.raises(DocumentProcessingError):
+        with pytest.raises(RuntimeError):
             uc.execute(dto)
 
         mock_document_repo.save.assert_called_once()
