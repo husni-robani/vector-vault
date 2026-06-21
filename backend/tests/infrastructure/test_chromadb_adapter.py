@@ -69,29 +69,48 @@ def test_add_chunks_error(vector_store, monkeypatch):
     assert "Failed to store chunks in vector database" in str(exc_info.value)
 
 
-def test_delete_data_successfully(vector_store):
-    # 1. Arrange: Add a chunk first
-    chunk = Chunk(
-        id="chunk_to_delete",
-        text="Text to be deleted",
-        vector=[0.5, 0.6],
-        metadata=MetaData(document_id="document_1", chunk_index=1, title="Doc"),
+def test_delete_by_document_successfully(vector_store):
+    document_id = "doc-to-delete"
+
+    chunks: list[Chunk] = [
+        Chunk(
+            id="chunk-a",
+            text="Text A",
+            vector=[0.5, 0.6],
+            metadata=MetaData(document_id=document_id, chunk_index=1, title="Doc X"),
+        ),
+        Chunk(
+            id="chunk-b",
+            text="Text B",
+            vector=[0.7, 0.8],
+            metadata=MetaData(document_id=document_id, chunk_index=2, title="Doc X"),
+        ),
+        Chunk(
+            id="chunk-c",
+            text="Text C",
+            vector=[0.9, 1.0],
+            metadata=MetaData(document_id="other-doc", chunk_index=1, title="Doc Y"),
+        ),
+    ]
+
+    vector_store.add_chunks(chunks=chunks)
+
+    all_ids = ["chunk-a", "chunk-b", "chunk-c"]
+    result_before = vector_store.collection.get(ids=all_ids)
+    assert len(result_before["ids"]) == 3
+
+    vector_store.delete_by_document(document_id=document_id)
+
+    result_after_deleted = vector_store.collection.get(ids=["chunk-a", "chunk-b"])
+    assert len(result_after_deleted["ids"]) == 0
+
+    result_other = vector_store.collection.get(ids=["chunk-c"])
+    assert len(result_other["ids"]) == 1, (
+        "chunks from other documents should not be deleted"
     )
-    vector_store.add_chunks(chunks=[chunk])
-
-    # Verify the chunk exists before deletion
-    result_before = vector_store.collection.get(ids=["chunk_to_delete"])
-    assert len(result_before["ids"]) == 1
-
-    # 2. Act: Delete the chunk
-    vector_store.delete_by_document(document_id="chunk_to_delete")
-
-    # 3. Assert: Verify the chunk is gone
-    result_after = vector_store.collection.get(ids=["chunk_to_delete"])
-    assert len(result_after["ids"]) == 0
 
 
-def test_delete_data_error(vector_store, monkeypatch):
+def test_delete_by_document_error(vector_store, monkeypatch):
     chunk = Chunk(
         id="3",
         text="Text 3",
@@ -106,7 +125,7 @@ def test_delete_data_error(vector_store, monkeypatch):
     monkeypatch.setattr(vector_store.collection, "delete", mock_delete_crash)
 
     with pytest.raises(ExternalServiceError) as exc_info:
-        vector_store.delete_by_document(document_id="3")
+        vector_store.delete_by_document(document_id="document_1")
 
     assert "Failed to delete data from collection" in str(exc_info.value)
 
@@ -206,3 +225,24 @@ def test_search_data_error(vector_store, monkeypatch):
         vector_store.search(embedding=[0.1, 0.2])
 
     assert "ChromaDB failed to search" in str(exc_info.value)
+
+
+def test_health_check_successfully(vector_store):
+    result = vector_store.health_check()
+
+    assert result.connected is True
+    assert result.collections_count == 1
+    assert result.error is None
+
+
+def test_health_check_error(vector_store, monkeypatch):
+    def mock_heartbeat_crash(*args, **kwargs):
+        raise RuntimeError("Simulated heartbeat failure")
+
+    monkeypatch.setattr(vector_store.client, "heartbeat", mock_heartbeat_crash)
+
+    result = vector_store.health_check()
+
+    assert result.connected is False
+    assert result.collections_count == 0
+    assert "Simulated heartbeat failure" in result.error

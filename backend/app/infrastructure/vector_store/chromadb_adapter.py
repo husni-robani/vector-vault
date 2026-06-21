@@ -88,19 +88,26 @@ class ChromaDBVectorStore(VectorStorePort):
                 ),
             )
             search_results.append(
-                SearchResult(
-                    chunk=chunk, distance=distances[0][i] if distances else 1
-                )
+                SearchResult(chunk=chunk, distance=distances[0][i] if distances else 1)
             )
 
         return search_results
 
     def delete_by_document(self, document_id: str):
         try:
-            self.collection.delete(ids=[document_id])
+            result = self.collection.delete(where={"document_id": document_id})
+            logger.info(f"total chunks deleted: {result['deleted']}")
         except Exception as e:
             logger.exception("ChromaDB failed to delete data")
             raise ExternalServiceError("Failed to delete data from collection") from e
 
     def health_check(self) -> VectorStoreHealth:
-        return VectorStoreHealth(connected=True, collections_count=1, error="")
+        try:
+            self.client.heartbeat()
+            collections_count = len(self.client.list_collections())
+            return VectorStoreHealth(
+                connected=True, collections_count=collections_count, error=None
+            )
+        except Exception as e:
+            logger.exception("ChromaDB health check failed")
+            return VectorStoreHealth(connected=False, collections_count=0, error=str(e))
