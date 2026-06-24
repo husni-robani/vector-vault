@@ -24,7 +24,7 @@ class DocumentRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def find_by_id(self, id: str) -> Document | None:
+    def find_by_id(self, doc_id: str) -> Document | None:
         """Look up a single document by its unique ID.
 
         Args:
@@ -36,10 +36,14 @@ class DocumentRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def delete(self, id: str):
+    def delete(self, doc_id: str):
         """Remove a document record by ID.
 
         Args:
             id: The document UUID to delete.
         """
+        pass
+
+    @abstractmethod
+    def close(self):
         pass
