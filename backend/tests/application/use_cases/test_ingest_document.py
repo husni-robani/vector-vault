@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import call
 from app.application.use_cases.ingest_document import IngestDocumentUseCase
 from app.application.dto import IngestDocumentInput
-from app.domain.documents import DocumentStatus
+from app.domain.documents import DocumentStatus, DocumentType
 
 
 class TestIngestDocument:
@@ -57,7 +57,9 @@ class TestIngestDocument:
 
         mock_file_storage.save.assert_called_once()
         mock_document_loader.load.assert_called_once()
-        mock_text_splitter.split.assert_called_once()
+        mock_text_splitter.split.assert_called_once_with(
+            "This is the document content for testing.", document_type=DocumentType.MD
+        )
         mock_embedder.embed.assert_called_once()
         mock_vector_store.add_chunks.assert_called_once()
         mock_document_repo.save.assert_called_once()
@@ -111,6 +113,9 @@ class TestIngestDocument:
         )
         uc.execute(dto)
 
+        mock_text_splitter.split.assert_called_once_with(
+            "This is the document content for testing.", document_type=DocumentType.MD
+        )
         mock_embedder.embed.assert_called_once_with(["chunk a", "chunk b"])
         mock_vector_store.add_chunks.assert_called_once()
         added_chunks = mock_vector_store.add_chunks.call_args[1]["chunks"]
@@ -144,6 +149,9 @@ class TestIngestDocument:
         with pytest.raises(RuntimeError):
             uc.execute(dto)
 
+        mock_text_splitter.split.assert_called_once_with(
+            "This is the document content for testing.", document_type=DocumentType.MD
+        )
         mock_document_repo.save.assert_called_once()
         saved_doc = mock_document_repo.save.call_args[0][0]
         assert saved_doc.status == DocumentStatus.ERROR

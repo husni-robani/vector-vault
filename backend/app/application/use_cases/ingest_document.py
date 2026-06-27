@@ -65,7 +65,7 @@ class IngestDocumentUseCase:
         # 3. Chunk Process & save document data
         try:
             # split the file
-            chunks_text: list[str] = self._splitter.split(content_str)
+            chunks_text: list[str] = self._splitter.split(content_str, document_type=document_data.file_type)
 
             # embedding process
             chunks_vector: list[list[float]] = self._embedder.embed(chunks_text)
