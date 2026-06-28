@@ -6,7 +6,7 @@ class TextSplitterPort(ABC):
 
     @abstractmethod
     def split(self, text: str, *, document_type: DocumentType) -> list[str]:
-        """Split a document's text into. Strategy is dispatched based on document_type
+        """Split a document's text into chunks. Strategy is dispatched based on document_type
 
         Args:
             text: The full plain-text content of a document.

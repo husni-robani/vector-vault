@@ -104,13 +104,12 @@ class TestLangChainTextSplitterMarkdown:
 
 
 class TestLangChainTextSplitterRouting:
-    def test_md_type_routes_to_markdown_splitter(self, splitter):
-        text = "# Header\nContent here."
 
+    def test_md_and_pdf_both_use_header_aware_splitting(self, splitter):
+        text = "# Header\nContent here."
         md_chunks = splitter.split(text, document_type=DocumentType.MD)
         pdf_chunks = splitter.split(text, document_type=DocumentType.PDF)
-
-        assert md_chunks != pdf_chunks
+        assert md_chunks == pdf_chunks  # same strategy for both
 
     def test_custom_chunk_size_is_respected(self):
         small = LangChainTextSplitter(chunk_size=32, overlap=0)

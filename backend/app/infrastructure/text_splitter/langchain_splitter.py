@@ -22,12 +22,13 @@ class LangChainTextSplitter(TextSplitterPort):
         self._chunk_size = chunk_size
 
     def split(self, text: str, *, document_type: DocumentType) -> list[str]:
-        if document_type == DocumentType.MD:
-            return self._split_markdown(text=text)
+        match document_type:
+            case DocumentType.MD | DocumentType.PDF:
+                return self._header_aware_split(text=text)
+            case _:
+                return self._char_splitter.split_text(text=text)
 
-        return self._split_pdf(text=text)
-
-    def _split_markdown(self, text: str) -> list[str]:
+    def _header_aware_split(self, text: str) -> list[str]:
         header_splits = self._header_splitter.split_text(text=text)
 
         chunks: list[str] = []
@@ -43,9 +44,6 @@ class LangChainTextSplitter(TextSplitterPort):
                 prefix = f"{header_metadata}\n\n" if header_metadata else ""
                 chunks.extend(f"{prefix}{sub}" for sub in sub_chunks)
         return chunks
-
-    def _split_pdf(self, text: str) -> list[str]:
-        return self._char_splitter.split_text(text=text)
 
     @staticmethod
     def _build_header_path(metadata: dict) -> str:
