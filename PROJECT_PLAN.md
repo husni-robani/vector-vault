@@ -177,7 +177,7 @@ vector-vault/
 │ (HuggingFace) │ │ (ChromaDB)   │ │ (Ollama)          │
 │               │ │               │ │                   │
 │ embed(texts)  │ │ search(embed) │ │ generate(prompt)  │
-│ → 384-dim vec │ │ → top-k chunks│ │ → SSE token stream│
+│ → 384-dim vec │ │ → top-k chunks│ │ → NDJSON tokens   │
 └──────────────┘ └──────────────┘ └──────────────────┘
 ```
 
@@ -265,7 +265,7 @@ LangChain lives **only** in the infrastructure layer, wrapped behind ports:
 |---------|-----------|-------|-------|
 | `ChromaDBVectorStore` | `VectorStorePort` | `chromadb.PersistentClient` | Embedded, no separate server |
 | `SentenceTransformerEmbedding` | `EmbeddingPort` | `sentence_transformers` | all-MiniLM-L6-v2, 384-dim vectors |
-| `OllamaLLM` | `LLMPort` | HTTP calls to `localhost:11434` | Streaming via SSE |
+| `OllamaLLM` | `LLMPort` | HTTP calls to `localhost:11434` | Streaming via NDJSON |
 | `LangChainDocumentLoader` | `DocumentLoaderPort` | `UnstructuredMarkdownLoader`, `PyMuPDFLoader` | Routes by file extension |
 | `LangChainTextSplitter` | `TextSplitterPort` | `RecursiveCharacterTextSplitter` | chunk_size=512, overlap=50 |
 | `LocalFileStorage` | `FileStoragePort` | `pathlib`, `shutil` | Saves to `data/uploads/` |

@@ -7,7 +7,7 @@ class LLMPort(ABC):
     """Generate text responses from a language model given a prompt."""
 
     @abstractmethod
-    def generate(self, prompt: str) -> AsyncIterator[str]:
+    async def generate(self, prompt: str) -> AsyncIterator[str]:
         """Stream a response from the LLM token by token.
 
         Args:

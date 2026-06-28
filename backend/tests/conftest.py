@@ -54,7 +54,9 @@ def mock_document_repo():
 @pytest.fixture
 def mock_llm():
     m = MagicMock(spec=LLMPort)
-    m.generate.return_value = _async_mock_iterator(["Based", " on", " the", " context"])
+    m.generate = MagicMock(
+        return_value=_async_mock_iterator(["Based", " on", " the", " context"])
+    )
     return m
 
 
