@@ -6,7 +6,9 @@ requires-python = ">=3.13"
 dependencies = [
     "chromadb>=1.5.9",
     "fastapi>=0.136.3",
+    "langchain-text-splitters>=1.1.2",
     "pydantic-settings>=2.14.1",
+    "sentence-transformers>=5.6.0",
     "uvicorn[standard]>=0.48.0",
 ]
 
