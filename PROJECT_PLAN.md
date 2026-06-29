@@ -492,14 +492,14 @@ def get_use_case(use_case_class):
 
 ### Phase 3 — Infrastructure Layer (adapters)
 
-- [ ] `infrastructure/vector_store/chromadb_adapter.py` — ChromaDBVectorStore
-- [ ] `infrastructure/embedding/hf_sentence_adapter.py` — SentenceTransformerEmbedding
-- [ ] `infrastructure/llm/ollama_adapter.py` — OllamaLLM with SSE streaming
-- [ ] `infrastructure/document_loaders/langchain_loader.py` — LangChain wrapper
-- [ ] `infrastructure/text_splitter/langchain_splitter.py` — Text splitter wrapper
-- [ ] `infrastructure/file_storage/local_storage.py` — LocalFileStorage
-- [ ] `infrastructure/document_repo/sqlite_repository.py` — SQLiteDocumentRepository
-- [ ] **Integration tests for adapters** — verify real ChromaDB/Ollama connections
+- [x] `infrastructure/vector_store/chromadb_adapter.py` — ChromaDBVectorStore
+- [x] `infrastructure/embedding/hf_sentence_adapter.py` — SentenceTransformerEmbedding
+- [x] `infrastructure/llm/ollama_adapter.py` — OllamaLLM with SSE streaming
+- [x] `infrastructure/document_loaders/langchain_loader.py` — LangChain wrapper
+- [x] `infrastructure/text_splitter/langchain_splitter.py` — Text splitter wrapper
+- [x] `infrastructure/file_storage/local_storage.py` — LocalFileStorage
+- [x] `infrastructure/document_repo/sqlite_repository.py` — SQLiteDocumentRepository
+- [x] **Integration tests for adapters** — verify real ChromaDB/Ollama connections
 
 ### Phase 4 — Interface Layer (controllers + serializers)
 
