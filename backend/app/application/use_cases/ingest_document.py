@@ -1,3 +1,5 @@
+import logging
+
 from app.application.ports import (
     DocumentLoaderPort,
     DocumentRepositoryPort,
@@ -12,6 +14,8 @@ from app.domain.documents import Document, DocumentStatus, DocumentType
 from uuid import uuid4
 from datetime import datetime
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class IngestDocumentUseCase:
@@ -58,10 +62,10 @@ class IngestDocumentUseCase:
             updated_at=str(datetime.now()),
         )
 
-        # 3. Chunk Process
+        # 3. Chunk Process & save document data
         try:
             # split the file
-            chunks_text: list[str] = self._splitter.split(content_str)
+            chunks_text: list[str] = self._splitter.split(content_str, document_type=document_data.file_type)
 
             # embedding process
             chunks_vector: list[list[float]] = self._embedder.embed(chunks_text)
@@ -70,33 +74,42 @@ class IngestDocumentUseCase:
             chunks: list[Chunk] = [
                 Chunk(
                     id=str(uuid4()),
-                    document=chunk_text,
-                    metadata=MetaData(document_id=document_data.id, chunk_index=i, title=Path(document_dto.filename).stem),
+                    text=text,
+                    vector=vector,
+                    metadata=MetaData(
+                        document_id=document_data.id,
+                        chunk_index=i,
+                        title=Path(document_dto.filename).stem,
+                    ),
                 )
-                for i, chunk_text in enumerate(chunks_text)
+                for i, (text, vector) in enumerate(zip(chunks_text, chunks_vector))
             ]
             # store to chroma db
-            self._vector_store.add_chunks(chunks=chunks, vectors=chunks_vector)
-        except Exception:
-            document_data.status = DocumentStatus.ERROR
+            self._vector_store.add_chunks(chunks=chunks)
+
+            # store document data to sqlite
+            document_data.chunks_count = len(chunks_text)
+
             self._doc_repo.save(document_data)
-            return IngestDocumentOutput(
-                id=document_data.id,
-                filename=document_data.filename,
-                status=document_data.status,
-                file_type=document_data.file_type,
-                title=document_data.title
+        except Exception:
+            logger.exception(
+                "Document processing failed for '%s'", document_dto.filename
             )
 
-        # 4. store document data to sqlite
-        document_data.chunks_count = len(chunks_text)
+            # delete the stored file
+            self._file_storage.delete(Path(file_path))
 
-        self._doc_repo.save(document_data)
+            # set document_status as error
+            document_data.status = DocumentStatus.ERROR
+
+            self._doc_repo.save(document_data)
+            
+            raise
 
         return IngestDocumentOutput(
             id=document_data.id,
             filename=document_data.filename,
             status=document_data.status,
             file_type=document_data.file_type,
-            title=document_data.title
+            title=document_data.title,
         )

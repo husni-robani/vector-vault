@@ -1,6 +1,6 @@
 import pytest
 from app.application.use_cases.answer_question import AnswerQuestionUseCase
-from app.application.dto import AnswerQuestionOutput
+from app.application.dto import AnswerQuestionInput, AnswerQuestionOutput
 
 
 class TestAnswerQuestion:
@@ -12,7 +12,9 @@ class TestAnswerQuestion:
         mock_embedder.embed.return_value = [[0.5] * 384]
 
         uc = AnswerQuestionUseCase(mock_embedder, mock_llm, mock_vector_store)
-        result = await uc.execute("What is machine learning?")
+        result = await uc.execute(
+            AnswerQuestionInput(question="What is machine learning?")
+        )
 
         assert isinstance(result, AnswerQuestionOutput)
 
@@ -24,7 +26,7 @@ class TestAnswerQuestion:
         mock_embedder.embed.return_value = [[0.5] * 384]
 
         uc = AnswerQuestionUseCase(mock_embedder, mock_llm, mock_vector_store)
-        await uc.execute("What is machine learning?")
+        await uc.execute(AnswerQuestionInput(question="What is machine learning?"))
 
         mock_embedder.embed.assert_called_once_with(texts=["What is machine learning?"])
         mock_vector_store.search.assert_called_once_with(embedding=[0.5] * 384)
@@ -37,7 +39,7 @@ class TestAnswerQuestion:
         mock_embedder.embed.return_value = [[0.5] * 384]
 
         uc = AnswerQuestionUseCase(mock_embedder, mock_llm, mock_vector_store)
-        await uc.execute("What is machine learning?")
+        await uc.execute(AnswerQuestionInput(question="What is machine learning?"))
 
         mock_llm.generate.assert_called_once()
         prompt_arg = mock_llm.generate.call_args[1]["prompt"]
@@ -53,16 +55,18 @@ class TestAnswerQuestion:
         mock_embedder.embed.return_value = [[0.5] * 384]
 
         uc = AnswerQuestionUseCase(mock_embedder, mock_llm, mock_vector_store)
-        result = await uc.execute("What is machine learning?")
+        result = await uc.execute(
+            AnswerQuestionInput(question="What is machine learning?")
+        )
 
         assert len(result.sources) == 2
         assert result.sources[0].title == "doc-1"
         assert result.sources[0].chunk_index == 0
-        assert result.sources[0].score == 0.92
+        assert result.sources[0].distance == 0.92
         assert result.sources[0].snippet == "context text one"
         assert result.sources[1].title == "doc-1"
         assert result.sources[1].chunk_index == 1
-        assert result.sources[1].score == 0.87
+        assert result.sources[1].distance == 0.87
         assert result.sources[1].snippet == "context text two"
 
     @pytest.mark.asyncio
@@ -73,7 +77,9 @@ class TestAnswerQuestion:
         mock_embedder.embed.return_value = [[0.5] * 384]
 
         uc = AnswerQuestionUseCase(mock_embedder, mock_llm, mock_vector_store)
-        result = await uc.execute("What is machine learning?")
+        result = await uc.execute(
+            AnswerQuestionInput(question="What is machine learning?")
+        )
 
         assert result.sources == []
         prompt_arg = mock_llm.generate.call_args[1]["prompt"]
@@ -87,7 +93,9 @@ class TestAnswerQuestion:
         mock_embedder.embed.return_value = [[0.5] * 384]
 
         uc = AnswerQuestionUseCase(mock_embedder, mock_llm, mock_vector_store)
-        result = await uc.execute("What is machine learning?")
+        result = await uc.execute(
+            AnswerQuestionInput(question="What is machine learning?")
+        )
 
         tokens = []
         async for token in result.token_stream:

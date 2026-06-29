@@ -54,7 +54,9 @@ def mock_document_repo():
 @pytest.fixture
 def mock_llm():
     m = MagicMock(spec=LLMPort)
-    m.generate.return_value = _async_mock_iterator(["Based", " on", " the", " context"])
+    m.generate = MagicMock(
+        return_value=_async_mock_iterator(["Based", " on", " the", " context"])
+    )
     return m
 
 
@@ -67,6 +69,8 @@ def sample_document():
         file_path="/data/uploads/test.md",
         file_type=DocumentType.MD,
         status=DocumentStatus.PROCESSED,
+        chunks_count=3,
+        size_bytes=1024,
         created_at="2025-01-01T00:00:00",
         updated_at="2025-01-01T00:00:00",
     )
@@ -78,18 +82,20 @@ def sample_search_results():
         SearchResult(
             chunk=Chunk(
                 id="c1",
-                document="context text one",
-                metadata=MetaData(document_id="doc-1", chunk_index=0),
+                text="context text one",
+                vector=[0.1, 0.2],
+                metadata=MetaData(document_id="doc-1", chunk_index=0, title="doc-1"),
             ),
-            score=0.92,
+            distance=0.92,
         ),
         SearchResult(
             chunk=Chunk(
                 id="c2",
-                document="context text two",
-                metadata=MetaData(document_id="doc-1", chunk_index=1),
+                text="context text two",
+                vector=[0.3, 0.4],
+                metadata=MetaData(document_id="doc-1", chunk_index=1, title="doc-1"),
             ),
-            score=0.87,
+            distance=0.87,
         ),
     ]
 

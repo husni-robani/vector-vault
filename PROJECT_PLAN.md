@@ -40,8 +40,9 @@ vector-vault/
 │   │   ├── domain/                     # LAYER 0: Entities — zero deps
 │   │   │   ├── __init__.py
 │   │   │   ├── documents.py            # Document, DocumentType, DocumentStatus
-│   │   │   ├── chunks.py               # Chunk, SearchResult
-│   │   │   └── conversations.py        # Conversation, Message (Phase 2)
+│   │   │   ├── chunks.py               # Chunk, SearchResult, MetaData
+│   │   │   ├── conversations.py        # Conversation, Message (Phase 2)
+│   │   │   └── exceptions.py           # VectorVaultError hierarchy
 │   │   │
 │   │   ├── application/                # LAYER 1: Business logic — depends on domain
 │   │   │   ├── __init__.py
@@ -176,7 +177,7 @@ vector-vault/
 │ (HuggingFace) │ │ (ChromaDB)   │ │ (Ollama)          │
 │               │ │               │ │                   │
 │ embed(texts)  │ │ search(embed) │ │ generate(prompt)  │
-│ → 384-dim vec │ │ → top-k chunks│ │ → SSE token stream│
+│ → 384-dim vec │ │ → top-k chunks│ │ → NDJSON tokens   │
 └──────────────┘ └──────────────┘ └──────────────────┘
 ```
 
@@ -202,7 +203,7 @@ vector-vault/
 │    2. loader: DocumentLoaderPort.load(path) → str                 │
 │    3. splitter: TextSplitterPort.split(text) → list[str]          │
 │    4. embedding: EmbeddingPort.embed(chunks) → list[vector]       │
-│    5. vector_store: VectorStorePort.add_chunks(chunks, vectors)   │
+│    5. vector_store: VectorStorePort.add_chunks(chunks)   │
 │    6. doc_repo: DocumentRepositoryPort.save(Document entity)      │
 │    Returns: IngestDocumentOutput                                  │
 └──────┬─────────┬──────────┬──────────┬──────────┬────────────────┘
@@ -264,7 +265,7 @@ LangChain lives **only** in the infrastructure layer, wrapped behind ports:
 |---------|-----------|-------|-------|
 | `ChromaDBVectorStore` | `VectorStorePort` | `chromadb.PersistentClient` | Embedded, no separate server |
 | `SentenceTransformerEmbedding` | `EmbeddingPort` | `sentence_transformers` | all-MiniLM-L6-v2, 384-dim vectors |
-| `OllamaLLM` | `LLMPort` | HTTP calls to `localhost:11434` | Streaming via SSE |
+| `OllamaLLM` | `LLMPort` | HTTP calls to `localhost:11434` | Streaming via NDJSON |
 | `LangChainDocumentLoader` | `DocumentLoaderPort` | `UnstructuredMarkdownLoader`, `PyMuPDFLoader` | Routes by file extension |
 | `LangChainTextSplitter` | `TextSplitterPort` | `RecursiveCharacterTextSplitter` | chunk_size=512, overlap=50 |
 | `LocalFileStorage` | `FileStoragePort` | `pathlib`, `shutil` | Saves to `data/uploads/` |
@@ -351,7 +352,7 @@ All config via environment variables (with `.env` file support):
 | `CHUNK_SIZE` | `512` | Text splitter chunk size |
 | `CHUNK_OVERLAP` | `50` | Text splitter overlap |
 | `TOP_K` | `5` | Number of chunks to retrieve |
-| `SCORE_THRESHOLD` | `0.7` | Minimum similarity score |
+| `DISTANCE_THRESHOLD` | `0.7` | Minimum similarity distance |
 | `MAX_UPLOAD_SIZE_MB` | `50` | Maximum file upload size |
 | `CORS_ORIGINS` | `http://localhost:5173` | Allowed frontend origins |
 
@@ -480,6 +481,7 @@ def get_use_case(use_case_class):
 - [x] `domain/documents.py` — Document entity, DocumentType enum, DocumentStatus enum
 - [x] `domain/chunks.py` — Chunk entity, SearchResult value object
 - [x] `domain/conversations.py` — Conversation, Message (skeleton for Phase 5)
+- [x] `domain/exceptions.py` — Custom exception hierarchy (VectorVaultError, NotFoundError, etc.)
 
 ### Phase 2 — Application Layer (ports + use cases + DTOs)
 
@@ -490,14 +492,14 @@ def get_use_case(use_case_class):
 
 ### Phase 3 — Infrastructure Layer (adapters)
 
-- [ ] `infrastructure/vector_store/chromadb_adapter.py` — ChromaDBVectorStore
-- [ ] `infrastructure/embedding/hf_sentence_adapter.py` — SentenceTransformerEmbedding
-- [ ] `infrastructure/llm/ollama_adapter.py` — OllamaLLM with SSE streaming
-- [ ] `infrastructure/document_loaders/langchain_loader.py` — LangChain wrapper
-- [ ] `infrastructure/text_splitter/langchain_splitter.py` — Text splitter wrapper
-- [ ] `infrastructure/file_storage/local_storage.py` — LocalFileStorage
-- [ ] `infrastructure/document_repo/sqlite_repository.py` — SQLiteDocumentRepository
-- [ ] **Integration tests for adapters** — verify real ChromaDB/Ollama connections
+- [x] `infrastructure/vector_store/chromadb_adapter.py` — ChromaDBVectorStore
+- [x] `infrastructure/embedding/hf_sentence_adapter.py` — SentenceTransformerEmbedding
+- [x] `infrastructure/llm/ollama_adapter.py` — OllamaLLM with SSE streaming
+- [x] `infrastructure/document_loaders/langchain_loader.py` — LangChain wrapper
+- [x] `infrastructure/text_splitter/langchain_splitter.py` — Text splitter wrapper
+- [x] `infrastructure/file_storage/local_storage.py` — LocalFileStorage
+- [x] `infrastructure/document_repo/sqlite_repository.py` — SQLiteDocumentRepository
+- [x] **Integration tests for adapters** — verify real ChromaDB/Ollama connections
 
 ### Phase 4 — Interface Layer (controllers + serializers)
 
@@ -524,7 +526,7 @@ def get_use_case(use_case_class):
 
 ### Phase 6 — Polish & Robustness
 
-- [ ] Error handling and validation across all layers
+- [ ] Error handling and validation across all layers (exception definitions in `domain/exceptions.py` already in place)
 - [ ] Document re-ingestion / update support
 - [ ] Chat history persistence (SQLite or local JSON, via new `ConversationRepositoryPort`)
 - [ ] Source citation in responses (which document/chunk, sent in SSE `done` event)

@@ -132,7 +132,7 @@ When navigating the codebase, use this map:
 
 | Directory | What lives here | Depends on |
 |-----------|----------------|------------|
-| `app/domain/` | Document, Chunk entities | Nothing |
+| `app/domain/` | Document, Chunk entities, custom exceptions | Nothing |
 | `app/application/ports/` | Abstract interfaces (ABCs) | domain |
 | `app/application/use_cases/` | Business logic orchestrators | ports + domain |
 | `app/application/dto/` | Use case input/output (dataclasses) | Nothing |
@@ -297,6 +297,24 @@ cd vector-vault/frontend
 npm run dev
 ```
 
+### Ollama on WSL
+
+If Ollama runs on Windows (not inside WSL), set `OLLAMA_BASE_URL` in your `.env` file:
+```bash
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+```
+
+Alternatively, configure Ollama on Windows to bind to all interfaces:
+```bash
+# Windows PowerShell (as admin)
+setx OLLAMA_HOST "0.0.0.0"
+```
+
+Verify connectivity from WSL:
+```bash
+curl http://host.docker.internal:11434/api/tags
+```
+
 ### GPU Acceleration (Optional)
 
 If you have an NVIDIA GPU and want faster inference:
@@ -316,6 +334,7 @@ pip install torch --index-url https://download.pytorch.org/whl/cu121
 | Problem | Solution |
 |---------|----------|
 | `ConnectionRefusedError` to Ollama | Check Ollama is running; verify URL in `.env`; check WSL networking |
+| Model not found | Run `ollama pull llama3.1` and verify with `ollama list` |
 | Embedding model download fails | Check internet; `pip install sentence-transformers` manually |
 | ChromaDB permission error | `chmod -R 755 data/chroma_db` |
 | Out of memory during LLM call | Switch to smaller model or reduce `TOP_K` |

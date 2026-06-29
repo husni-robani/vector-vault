@@ -2,6 +2,9 @@ from enum import StrEnum
 from dataclasses import dataclass
 from pathlib import Path
 
+from app.domain.exceptions import UnsupportedFileTypeError
+
+
 class DocumentType(StrEnum):
     MD = ".md"
     PDF = ".pdf"
@@ -12,16 +15,18 @@ class DocumentType(StrEnum):
         try:
             return cls(ext)
         except ValueError as e:
-            raise ValueError(f"Unsupported file type: {ext}") from e
+            raise UnsupportedFileTypeError(f"Unsupported file type: {ext}") from e
 
-class DocumentStatus(StrEnum): 
+
+class DocumentStatus(StrEnum):
     PENDING = "pending"
     PROCESSED = "processed"
     ERROR = "error"
 
+
 @dataclass
 class Document:
-    id: str # uuid
+    id: str  # uuid
     title: str
     filename: str
     file_path: str

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from pathlib import Path
 
 class FileStoragePort(ABC):
     """Store and delete raw uploaded files on disk."""
@@ -7,6 +7,10 @@ class FileStoragePort(ABC):
     @abstractmethod
     def save(self, name: str, content: bytes) -> str:
         """Persist a file and return its storage path.
+
+        Raises:
+            FileAlreadyExistsError: If a file with this name already exists
+            ExternalServiceError: If the storage backend fails (disk, network, permissions)
 
         Args:
             name: The filename to use when saving.
@@ -18,7 +22,7 @@ class FileStoragePort(ABC):
         pass
 
     @abstractmethod
-    def delete(self, path: str):
+    def delete(self, path: Path):
         """Remove a previously saved file.
 
         Args:
