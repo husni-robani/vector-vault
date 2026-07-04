@@ -54,7 +54,7 @@ class IngestDocumentUseCase:
             title=document_dto.title,
             filename=document_dto.filename,
             file_path=file_path,
-            file_type=DocumentType.from_filename(document_dto.filename),
+            file_type=document_dto.content_type,
             status=DocumentStatus.PROCESSED,
             chunks_count=0,
             size_bytes=len(document_dto.content),
