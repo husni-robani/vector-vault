@@ -1,1 +1,1 @@
-from chromadb_adapter import ChromaDBVectorStore
+from .chromadb_adapter import ChromaDBVectorStore

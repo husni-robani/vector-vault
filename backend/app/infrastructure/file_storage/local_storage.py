@@ -1,10 +1,11 @@
 import logging
 from pathlib import Path
 from app.domain.exceptions import FileAlreadyExistsError, ExternalServiceError
+from app.application.ports.file_storage import FileStoragePort
 
 logger = logging.getLogger(__name__)
 
-class LocalFileStorage:
+class LocalFileStorage(FileStoragePort):
     def __init__(self, storage_path: Path) -> None:
         self.storage_path: Path =  storage_path
 

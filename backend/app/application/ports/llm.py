@@ -16,7 +16,7 @@ class LLMPort(ABC):
         Returns:
             An async iterator yielding response tokens as strings.
         """
-        pass
+        yield ""
 
     @abstractmethod
     def health_check(self) -> LLMHealth:
