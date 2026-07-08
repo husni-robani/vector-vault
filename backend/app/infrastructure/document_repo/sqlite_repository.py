@@ -8,21 +8,27 @@ logger = logging.getLogger(__name__)
 
 class SQLiteDocumentRepository(DocumentRepositoryPort):
     def __init__(self, database_file: str) -> None:
-        self.conn: sqlite3.Connection = sqlite3.connect(database=database_file)
+        self.conn: sqlite3.Connection = sqlite3.connect(
+            database=database_file,
+            check_same_thread=False
+        )
         self.conn.row_factory = sqlite3.Row
+        self.initialize_tables()
 
     def initialize_tables(self):
-        cursor = self.conn.cursor()
-
         try: 
+            cursor = self.conn.cursor()
+
             with self.conn:
+                cursor.execute("PRAGMA journal_mode=WAL;")
+                
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS documents (
                         id TEXT PRIMARY KEY,
                         title TEXT NOT NULL,
                         filename TEXT NOT NULL,
                         file_path TEXT NOT NULL,
-                        file_type TEXT NOT NULL CHECK (file_type IN ('.md', '.pdf')),
+                        file_type TEXT NOT NULL CHECK (file_type IN ('text/markdown', 'application/pdf')),
                         status TEXT NOT NULL CHECK (status IN ('pending', 'processed', 'error')),
                         chunks_count INTEGER NOT NULL,
                         size_bytes INTEGER NOT NULL,
