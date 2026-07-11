@@ -1,10 +1,9 @@
 import logging
 from fastapi import APIRouter, Form
 from typing import Annotated
-from app.interfaces.schemas.documents import DocumentUploadRequest
 from app.application.dto import IngestDocumentInput
 from app.domain.documents import DocumentType
-from app.interfaces.schemas.response import SuccessResponse
+from app.interfaces.schemas import SuccessResponse, DocumentUploadRequest, DocumentUploadResponse 
 from app.interfaces.dependencies import ContainerDep
 from app.application.use_cases import IngestDocumentUseCase
 
@@ -14,7 +13,8 @@ router: APIRouter = APIRouter()
 
 @router.post("/documents")
 def upload_document(
-    body: Annotated[DocumentUploadRequest, Form()], container: ContainerDep
+    body: Annotated[DocumentUploadRequest, Form()], 
+    container: ContainerDep
 ):
     ingest_document_usecase: IngestDocumentUseCase = container.ingest_document_usecase()
 
@@ -33,11 +33,11 @@ def upload_document(
 
     return SuccessResponse(
         message="Upload document success",
-        data={
-            "document_id": result.id,
-            "filename": result.filename,
-            "file_type": result.file_type,
-            "title": result.title,
-            "status": result.status,
-        },
+        data=DocumentUploadResponse(
+            document_id=result.id,
+            filename=result.filename,
+            file_type=result.file_type,
+            title=result.title,
+            status=result.status,
+        ),
     )

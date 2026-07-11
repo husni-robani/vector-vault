@@ -5,7 +5,7 @@ from typing import TypeVar, Optional, Generic, Any
 # T represents dynamic data payload
 T = TypeVar('T')
 
-# base configuration
+# base response configuration
 class BaseResponseModel(BaseModel):
     model_config = ConfigDict(
         alias_generator=to_snake,
@@ -13,7 +13,7 @@ class BaseResponseModel(BaseModel):
         from_attributes=True
     )
 
-
+# JSON response (application/json)
 class PaginationMetadata(BaseResponseModel):
     current_page: int
     per_page: int
