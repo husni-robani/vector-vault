@@ -12,6 +12,11 @@ from .chat import (
     DoneEventData,
     ErrorEventData,
 )
+from .health import (
+    HealthResponse,
+    OllamaHealthResponse,
+    ChromadbHealthResponse,
+)
 
 __all__ = [
     "DocumentUploadRequest",
@@ -26,4 +31,7 @@ __all__ = [
     "SourcesEventData",
     "DoneEventData",
     "ErrorEventData",
+    "HealthResponse",
+    "OllamaHealthResponse",
+    "ChromadbHealthResponse",
 ]
