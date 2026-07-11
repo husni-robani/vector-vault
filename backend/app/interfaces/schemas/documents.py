@@ -1,5 +1,5 @@
 from fastapi import UploadFile
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator
 from app.config import get_settings
 from app.domain.documents import DocumentType, DocumentStatus
 from app.interfaces.schemas.response import BaseResponseModel
@@ -41,18 +41,15 @@ class DocumentInfo(BaseResponseModel):
     id: str
     title: str
     filename: str
-    file_type: str
+    file_type: DocumentType
     chunks_count: int
     created_at: str
     status: DocumentStatus
     size_bytes: int
 
-    @field_validator("file_type", mode="before")
-    @classmethod
-    def convert_file_type(cls, v):
-        if isinstance(v, DocumentType):
-            return v.extension
-        return v
+    @field_serializer("file_type")
+    def serialize_file_type(self, v: DocumentType) -> str:
+        return v.extension
 
 
 class DocumentListResponse(BaseResponseModel):
