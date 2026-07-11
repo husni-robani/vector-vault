@@ -204,7 +204,8 @@ Check system health: Ollama connectivity and ChromaDB status.
   },
   "chromadb": {
     "connected": true
-  }
+  },
+  "embedding_model": "unknown"
 }
 ```
 
