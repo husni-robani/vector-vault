@@ -218,11 +218,13 @@ def client():
 @pytest.fixture
 def client_small_max_upload():
     """
-    Same as `client` but max upload size is effectively 1 KB.
+    Same as `client` but max upload size is effectively zero bytes.
 
-    Uses a separate temp directory and overrides the schema module's
-    cached settings so the Pydantic validator rejects files > 1 KB.
+    Uses a separate temp directory and patches the schema module's
+    get_settings() so the Pydantic validator rejects any non-empty file.
     """
+    from unittest.mock import patch
+
     tmp = Path(tempfile.mkdtemp())
 
     test_settings = Settings(
@@ -238,19 +240,12 @@ def client_small_max_upload():
     container = _build_test_container(test_settings)
     app = _build_app(container)
 
-    # ── Patch the schema module's cached settings ──────────────
-    # The Pydantic validator reads `settings.max_upload_size_mb` at
-    # runtime.  We mutate the module-level variable; restore it on
-    # teardown so the regular `client` fixture isn't affected.
-    import app.interfaces.schemas.documents as doc_schema
-
-    _original_max = doc_schema.settings.max_upload_size_mb
-    doc_schema.settings.max_upload_size_mb = 0
-
-    with TestClient(app) as c:
-        yield c
-
-    doc_schema.settings.max_upload_size_mb = _original_max
+    with patch(
+        "app.interfaces.schemas.documents.get_settings",
+        return_value=test_settings,
+    ):
+        with TestClient(app) as c:
+            yield c
 
     container.close()
     shutil.rmtree(tmp, ignore_errors=True)
