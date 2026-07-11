@@ -1,3 +1,4 @@
+import json
 import shutil
 import tempfile
 from collections.abc import AsyncIterator
@@ -173,6 +174,30 @@ def _build_app(container: Container) -> FastAPI:
     app.include_router(api_router)
 
     return app
+
+
+# ===========================================================================
+# SSE parsing helper
+# ===========================================================================
+
+
+def parse_sse_events(response) -> list[dict]:
+    events: list[dict] = []
+    current_event: str | None = None
+    current_data: dict | None = None
+
+    for line in response.text.split("\n"):
+        line = line.strip()
+        if line.startswith("data:"):
+            current_data = json.loads(line[5:].strip())
+        elif line.startswith("event:"):
+            current_event = line[6:].strip()
+        elif line == "" and current_data is not None:
+            events.append({"event": current_event, "data": current_data})
+            current_event = None
+            current_data = None
+
+    return events
 
 
 # ===========================================================================
