@@ -15,7 +15,11 @@ from app.interfaces.schemas import (
     DocumentListResponse,
 )
 from app.interfaces.dependencies import ContainerDep
-from app.application.use_cases import IngestDocumentUseCase, ListDocumentsUseCase
+from app.application.use_cases import (
+    IngestDocumentUseCase,
+    ListDocumentsUseCase,
+    DeleteDocumentUseCase,
+)
 
 logger = logging.getLogger(__name__)
 router: APIRouter = APIRouter()
@@ -23,9 +27,9 @@ router: APIRouter = APIRouter()
 
 @router.get("/documents")
 def list_documents(
+    container: ContainerDep,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
-    container: ContainerDep = None,
 ):
     list_usecase: ListDocumentsUseCase = container.list_documents_usecase()
     input_dto = ListDocumentsInput(page=page, limit=limit)
@@ -71,3 +75,13 @@ def upload_document(
             status=result.status,
         ),
     )
+
+
+@router.delete("/documents/{doc_id}")
+def delete_document(
+    doc_id: str,
+    container: ContainerDep,
+):
+    delete_usecase: DeleteDocumentUseCase = container.delete_document_usecase()
+    delete_usecase.execute(doc_id)
+    return SuccessResponse(message="Document deleted successfully")
