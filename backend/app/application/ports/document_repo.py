@@ -15,11 +15,17 @@ class DocumentRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def find_all(self) -> list[Document]:
-        """List all stored documents.
+    def find_all(
+        self, page: int | None = None, limit: int = 50
+    ) -> tuple[list[Document], int]:
+        """List documents with optional pagination.
+
+        Args:
+            page: 1-indexed page number. None returns all documents.
+            limit: Page size (ignored when page is None).
 
         Returns:
-            All document records currently in the repository.
+            Tuple of (documents, total_count).
         """
         pass
 

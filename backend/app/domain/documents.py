@@ -5,22 +5,29 @@ from pathlib import Path
 from app.domain.exceptions import UnsupportedFileTypeError
 
 
-class   DocumentType(StrEnum):
+class DocumentType(StrEnum):
     MD = "text/markdown"
     PDF = "application/pdf"
 
     @classmethod
     def from_filename(cls, filename: str) -> "DocumentType":
         ext = Path(filename).suffix.lower()
-        
+
         match ext:
             case ".pdf":
                 return cls.PDF
-            case ".md": 
+            case ".md":
                 return cls.MD
             case _:
-                raise UnsupportedFileTypeError(f"Unsupported file type: {ext}") 
+                raise UnsupportedFileTypeError(f"Unsupported file type: {ext}")
 
+    @property
+    def extension(self) -> str:
+        match self:
+            case DocumentType.MD:
+                return ".md"
+            case DocumentType.PDF:
+                return ".pdf"
 
 
 class DocumentStatus(StrEnum):

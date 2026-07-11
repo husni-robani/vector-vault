@@ -1,5 +1,10 @@
 from .response import SuccessResponse, PaginationMetadata, ErrorResponse
-from .documents import DocumentUploadRequest, DocumentUploadResponse
+from .documents import (
+    DocumentUploadRequest,
+    DocumentUploadResponse,
+    DocumentInfo,
+    DocumentListResponse,
+)
 from .chat import (
     ChatRequest,
     DeliveryEventData,
@@ -11,6 +16,8 @@ from .chat import (
 __all__ = [
     "DocumentUploadRequest",
     "DocumentUploadResponse",
+    "DocumentInfo",
+    "DocumentListResponse",
     "SuccessResponse",
     "PaginationMetadata",
     "ErrorResponse",

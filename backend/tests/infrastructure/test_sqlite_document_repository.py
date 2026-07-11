@@ -100,7 +100,8 @@ def test_find_all_returns_all_documents(repo, sample_doc):
     repo.save(sample_doc)
     repo.save(doc2)
 
-    results = repo.find_all()
+    results, total = repo.find_all()
+    assert total == 2
     assert len(results) == 2
     ids = {d.id for d in results}
     assert ids == {sample_doc.id, doc2.id}
@@ -125,8 +126,9 @@ def test_delete_non_existent_does_not_raise(repo):
 
 
 def test_find_all_empty_database_returns_empty_list(repo):
-    results = repo.find_all()
+    results, total = repo.find_all()
     assert results == []
+    assert total == 0
 
 
 class _CrashingCursor:
