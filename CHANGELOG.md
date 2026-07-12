@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.5.0] - 2026-07-12
+
+### Added
+- Interface layer: all API controllers and schemas (Phase 4)
+  - `interfaces/api/chat.py` — thin controller delegating to AnswerQuestionUseCase
+  - `interfaces/api/documents.py` — thin controllers for document upload, list, and delete
+  - `interfaces/api/health.py` — health check endpoint
+  - `interfaces/api/router.py` — aggregated `/api` router
+  - `interfaces/api/exception_handlers.py` — domain exception → HTTP status mapping
+  - `interfaces/schemas/` — Pydantic request/response schemas (chat, documents, health, response)
+- Composition root (`main.py`) wiring adapters → use cases → DI → uvicorn
+- FastAPI DI container (`dependencies.py`) with lazy service factory pattern
+- E2E tests with FastAPI TestClient using stub LLM/embedder and real SQLite/ChromaDB/file storage
+- `Makefile` for common dev tasks (run, test, lint, clean)
+
 ## [v0.4.0] - 2026-06-28
 
 ### Added

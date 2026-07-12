@@ -503,14 +503,14 @@ def get_use_case(use_case_class):
 
 ### Phase 4 — Interface Layer (controllers + schemas)
 
-- [ ] `interfaces/schemas/` — Pydantic request/response schemas (separate from domain)
+- [x] `interfaces/schemas/` — Pydantic request/response schemas (separate from domain)
 - [x] `interfaces/api/chat.py` — Thin controller, delegates to AnswerQuestionUseCase
 - [x] `interfaces/api/documents.py` — Thin controllers for upload/list/delete
-- [ ] `interfaces/api/health.py` — Health check endpoint
-- [ ] `interfaces/api/router.py` — Aggregated router
+- [x] `interfaces/api/health.py` — Health check endpoint
+- [x] `interfaces/api/router.py` — Aggregated router
 - [x] `dependencies.py` — FastAPI DI providers returning use case instances
 - [x] `main.py` — Composition root: wire adapters → use cases → DI → start uvicorn
-- [ ] **E2E tests** — FastAPI TestClient with real adapters
+- [x] **E2E tests** — FastAPI TestClient with real adapters
 
 ### Phase 5 — Frontend
 

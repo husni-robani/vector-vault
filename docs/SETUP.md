@@ -138,13 +138,13 @@ When navigating the codebase, use this map:
 | `app/application/dto/` | Use case input/output (dataclasses) | Nothing |
 | `app/infrastructure/` | Concrete adapters (ChromaDB, Ollama, LangChain) | ports (implements them) |
 | `app/interfaces/api/` | FastAPI route handlers (thin controllers) | use_cases |
-| `app/interfaces/serializers/` | Pydantic request/response schemas | Nothing |
+| `app/interfaces/schemas/` | Pydantic request/response schemas | Nothing |
 | `app/main.py` | Composition root (DI assembly) | Everything |
 | `app/dependencies.py` | FastAPI DI providers | use_cases |
 | `tests/domain/` | Entity unit tests | domain |
 | `tests/application/` | Use case tests (mock ports) | use_cases |
 | `tests/infrastructure/` | Adapter integration tests | adapters |
-| `tests/interfaces/` | E2E API tests | FastAPI app |
+| `tests/e2e/` | E2E API tests | FastAPI app |
 
 ### Running Tests by Layer
 
@@ -161,8 +161,8 @@ pytest tests/application/
 # Integration tests (infrastructure) — needs real ChromaDB & Ollama
 pytest tests/infrastructure/
 
-# E2E tests (interfaces) — full FastAPI test client
-pytest tests/interfaces/
+# E2E tests — full FastAPI test client
+pytest tests/e2e/
 
 # Run all
 pytest
