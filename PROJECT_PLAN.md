@@ -100,10 +100,10 @@ vector-vault/
 │   │       │   ├── chat.py             # POST /api/chat (thin controller)
 │   │       │   ├── documents.py        # POST/GET/DELETE /api/documents
 │   │       │   └── health.py           # GET /api/health
-│   │       └── serializers/            # HTTP boundary models (Pydantic)
+│   │       └── schemas/            # HTTP boundary models (Pydantic)
 │   │           ├── __init__.py
-│   │           ├── chat_schemas.py     # ChatRequest, ChatResponse
-│   │           └── documents_schemas.py # DocumentUpload, DocumentInfo
+│   │           ├── chat.py     # ChatRequest, ChatResponse
+│   │           └── documents.py # DocumentUpload, DocumentInfo
 │   │
 │   ├── data/
 │   │   ├── chroma_db/                  # ChromaDB persistence
@@ -219,7 +219,7 @@ vector-vault/
 
 ```
                      ┌─────────────────┐
-                     │   interfaces/   │  ← Controllers, Serializers
+                     │   interfaces/   │  ← Controllers, schemas
                      │  (FastAPI DTOs) │     depends on application
                      └────────┬────────┘
                               │
@@ -501,16 +501,16 @@ def get_use_case(use_case_class):
 - [x] `infrastructure/document_repo/sqlite_repository.py` — SQLiteDocumentRepository
 - [x] **Integration tests for adapters** — verify real ChromaDB/Ollama connections
 
-### Phase 4 — Interface Layer (controllers + serializers)
+### Phase 4 — Interface Layer (controllers + schemas)
 
-- [ ] `interfaces/serializers/` — Pydantic request/response schemas (separate from domain)
-- [ ] `interfaces/api/chat.py` — Thin controller, delegates to AnswerQuestionUseCase
-- [ ] `interfaces/api/documents.py` — Thin controllers for upload/list/delete
-- [ ] `interfaces/api/health.py` — Health check endpoint
-- [ ] `interfaces/api/router.py` — Aggregated router
-- [ ] `dependencies.py` — FastAPI DI providers returning use case instances
-- [ ] `main.py` — Composition root: wire adapters → use cases → DI → start uvicorn
-- [ ] **E2E tests** — FastAPI TestClient with real adapters
+- [x] `interfaces/schemas/` — Pydantic request/response schemas (separate from domain)
+- [x] `interfaces/api/chat.py` — Thin controller, delegates to AnswerQuestionUseCase
+- [x] `interfaces/api/documents.py` — Thin controllers for upload/list/delete
+- [x] `interfaces/api/health.py` — Health check endpoint
+- [x] `interfaces/api/router.py` — Aggregated router
+- [x] `dependencies.py` — FastAPI DI providers returning use case instances
+- [x] `main.py` — Composition root: wire adapters → use cases → DI → start uvicorn
+- [x] **E2E tests** — FastAPI TestClient with real adapters
 
 ### Phase 5 — Frontend
 

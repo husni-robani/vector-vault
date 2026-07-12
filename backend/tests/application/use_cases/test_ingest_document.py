@@ -24,7 +24,10 @@ class TestIngestDocument:
             mock_vector_store,
         )
         dto = IngestDocumentInput(
-            filename="test.md", title="test", content=b"file content bytes"
+            filename="test.md",
+            title="test",
+            content=b"file content bytes",
+            content_type=DocumentType.MD,
         )
 
         result = uc.execute(dto)
@@ -51,7 +54,10 @@ class TestIngestDocument:
             mock_vector_store,
         )
         dto = IngestDocumentInput(
-            filename="test.md", title="test", content=b"file content bytes"
+            filename="test.md",
+            title="test",
+            content=b"file content bytes",
+            content_type=DocumentType.MD,
         )
         uc.execute(dto)
 
@@ -82,7 +88,10 @@ class TestIngestDocument:
             mock_vector_store,
         )
         dto = IngestDocumentInput(
-            filename="test.md", title="test", content=b"file content bytes"
+            filename="test.md",
+            title="test",
+            content=b"file content bytes",
+            content_type=DocumentType.MD,
         )
         uc.execute(dto)
 
@@ -109,7 +118,10 @@ class TestIngestDocument:
             mock_vector_store,
         )
         dto = IngestDocumentInput(
-            filename="test.md", title="test", content=b"file content bytes"
+            filename="test.md",
+            title="test",
+            content=b"file content bytes",
+            content_type=DocumentType.MD,
         )
         uc.execute(dto)
 
@@ -143,7 +155,10 @@ class TestIngestDocument:
             mock_vector_store,
         )
         dto = IngestDocumentInput(
-            filename="test.md", title="test", content=b"file content bytes"
+            filename="test.md",
+            title="test",
+            content=b"file content bytes",
+            content_type=DocumentType.MD,
         )
 
         with pytest.raises(RuntimeError):
@@ -176,7 +191,10 @@ class TestIngestDocument:
             mock_vector_store,
         )
         dto = IngestDocumentInput(
-            filename="test.md", title="test", content=b"file content bytes"
+            filename="test.md",
+            title="test",
+            content=b"file content bytes",
+            content_type=DocumentType.MD,
         )
 
         with pytest.raises(RuntimeError):
@@ -204,7 +222,10 @@ class TestIngestDocument:
             mock_vector_store,
         )
         dto = IngestDocumentInput(
-            filename="test.md", title="test", content=b"file content bytes"
+            filename="test.md",
+            title="test",
+            content=b"file content bytes",
+            content_type=DocumentType.MD,
         )
 
         with pytest.raises(RuntimeError):
