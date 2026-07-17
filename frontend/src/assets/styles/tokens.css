@@ -1,0 +1,105 @@
+/* SYNCED COPY from .opencode/context/design-tokens.css — DO NOT EDIT DIRECTLY */
+/* ==========================================================================
+   Vector Vault — Design Tokens
+   Generated from brandkit run (Open Design)
+   Source of truth: .opencode/context/design-tokens.css
+   Synced to: src/assets/styles/tokens.css (by ui-component-builder)
+   ========================================================================== */
+
+:root {
+  /* ── Palette: Light Mode ── */
+  --color-bg-primary: #faf8f5;       /* Warm parchment off-white */
+  --color-bg-secondary: #faf9f5;      /* Ivory surface */
+  --color-bg-tertiary: #e8e6dc;       /* Warm sand — hover states, separators */
+  --color-text-primary: #1B2A3A;      /* Deep navy — primary text */
+  --color-text-secondary: #5e5d59;    /* Olive gray — muted text, captions */
+  --color-text-tertiary: #8b8980;     /* Muted warm gray — placeholder text */
+
+  /* ── Palette: Accent (Amber/Gold) ── */
+  --color-accent: #c4952e;            /* Warm amber — primary accent */
+  --color-accent-bright: #d4a43e;     /* Brighter amber — hover, active states */
+  --color-accent-bg: rgba(196, 149, 46, 0.12); /* Amber tint — chips, badges */
+
+  /* ── Palette: Dark Mode ── */
+  --color-dark-bg: #1a1c22;           /* Warm charcoal — dark background */
+  --color-dark-surface: #262420;      /* Warm dark surface — cards, panels */
+  --color-dark-text: #f0ece4;         /* Warm off-white — dark mode text */
+  --color-dark-muted: #8b8980;        /* Muted gray — dark mode secondary */
+
+  /* ── Palette: Semantic ── */
+  --color-success: #6cb56c;           /* Success green */
+  --color-warning: #d4a43e;           /* Warning amber (same as accent-bright) */
+  --color-error: #e06c6c;             /* Error red */
+  --color-info: #1B2A3A;             /* Info navy */
+
+  /* ── Typography ── */
+  --font-display: 'EB Garamond', 'Georgia', serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Type Scale */
+  --font-size-xs: 0.5625rem;    /* 9px — labels, micro copy */
+  --font-size-sm: 0.625rem;     /* 10px — small labels */
+  --font-size-base: 0.75rem;    /* 12px — body, UI text */
+  --font-size-md: 0.875rem;     /* 14px — enhanced body */
+  --font-size-lg: 1.125rem;     /* 18px — wordmark-sm, subheadings */
+  --font-size-xl: 1.5rem;       /* 24px — type heading */
+  --font-size-2xl: 1.625rem;    /* 26px — essence text */
+  --font-size-3xl: 1.75rem;     /* 28px — wordmark-md */
+  --font-size-4xl: 2.625rem;    /* 42px — wordmark-lg */
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Line Heights */
+  --line-height-tight: 1.1;
+  --line-height-snug: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.55;
+
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.02em;
+  --letter-spacing-wider: 0.06em;
+  --letter-spacing-widest: 0.08em;
+
+  /* ── Spacing ── */
+  --spacing-xs: 0.25rem;    /* 4px */
+  --spacing-sm: 0.375rem;   /* 6px */
+  --spacing-md: 0.5rem;     /* 8px */
+  --spacing-lg: 0.75rem;    /* 12px — gutter between panels */
+  --spacing-xl: 1rem;       /* 16px */
+  --spacing-2xl: 1.25rem;   /* 20px — logo-row gap */
+  --spacing-3xl: 1.5rem;    /* 24px — body padding */
+
+  /* ── Border Radius ── */
+  --radius-sm: 3px;    /* Swatch chips, input borders */
+  --radius-md: 4px;    /* Cards, message bubbles */
+  --radius-lg: 5px;    /* Browser chrome */
+  --radius-xl: 6px;    /* Panels, large containers */
+  --radius-full: 9999px; /* Pills, theme toggle */
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);    /* Swatches */
+  --shadow-md: 0 1px 4px rgba(0, 0, 0, 0.1);     /* Doc cards */
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.2);     /* Physical card, modals */
+
+  /* ── Borders ── */
+  --border-color-light: var(--color-bg-tertiary);
+  --border-color-dark: rgba(255, 255, 255, 0.06);
+  --border-width-thin: 0.5px;
+  --border-width-normal: 1px;
+  --border-width-thick: 2px;
+
+  /* ── Layout ── */
+  --max-width-content: 1440px;
+  --max-height-board: min(90vh, 810px);
+  --aspect-ratio-board: 16 / 9;
+
+  /* ── Transitions ── */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}

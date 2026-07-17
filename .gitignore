@@ -1,5 +1,8 @@
 # --- OpenCode tooling (local config, not part of project) ---
 .opencode/
+!frontend/.opencode/
+frontend/.opencode/*
+!frontend/.opencode/context/
 opencode.json
 # --- Python (backend) ---
 __pycache__/
@@ -28,3 +31,8 @@ backend/data/uploads/
 
 # --- Test artifacts ---
 .coverage
+
+# frontend
+frontend/.vite/
+frontend/.od/
+frontend/test-results/
