@@ -1,5 +1,7 @@
 # --- OpenCode tooling (local config, not part of project) ---
 .opencode/
+!frontend/.opencode/
+frontend/.opencode/*
 !frontend/.opencode/context/
 opencode.json
 # --- Python (backend) ---
