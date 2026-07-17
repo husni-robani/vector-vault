@@ -33,5 +33,6 @@ backend/data/uploads/
 .coverage
 
 # frontend
+frontend/.vite/
 frontend/.od/
 frontend/test-results/
