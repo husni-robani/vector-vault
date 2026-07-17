@@ -28,3 +28,6 @@ backend/data/uploads/
 
 # --- Test artifacts ---
 .coverage
+
+# frontend
+frontend/.od/
