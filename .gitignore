@@ -34,3 +34,4 @@ backend/data/uploads/
 
 # frontend
 frontend/.od/
+frontend/test-results/
