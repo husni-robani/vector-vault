@@ -1,232 +1,278 @@
 <template>
-  <div class="chat-message" :class="`chat-message--${role}`">
-    <!-- Loading State: Skeleton -->
-    <div v-if="loading" class="chat-message__skeleton" aria-busy="true" aria-label="Loading message">
-      <div class="skeleton-line skeleton-line--short"></div>
-      <div class="skeleton-line skeleton-line--long"></div>
-      <div class="skeleton-line skeleton-line--medium"></div>
-    </div>
+  <div class="message" :class="`message--${role}`">
+    <!-- Assistant Message: marginalia-style with avatar -->
+    <template v-if="role === 'assistant'">
+      <div class="message__row">
+        <div class="message__avatar">V</div>
+        <div class="message__body">
+          <div class="message__bubble">
+            <!-- Waiting indicator: animated dots before first token -->
+            <span v-if="isWaiting" class="message__typing" aria-label="Assistant is typing">
+              <span class="message__typing-dot" />
+              <span class="message__typing-dot" />
+              <span class="message__typing-dot" />
+            </span>
+            <template v-else>
+              <p class="message__text">{{ content }}</p>
+              <span v-if="isStreaming" class="message__streaming-indicator">|</span>
+            </template>
+          </div>
 
-    <!-- Error State -->
-    <div v-else-if="hasError" class="chat-message__error" role="alert">
-      <span class="chat-message__error-icon" aria-hidden="true">&#x26A0;</span>
-      <span class="chat-message__error-text">{{ errorMessage }}</span>
-    </div>
+          <!-- Sources -->
+          <div v-if="sources && sources.length > 0" class="message__sources">
+            <span
+              v-for="(source, i) in sources"
+              :key="i"
+              class="source-chip"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2 1.5H7.5L10 4V10.5C10 10.7761 9.77614 11 9.5 11H2.5C2.22386 11 2 10.7761 2 10.5V2C2 1.72386 2.22386 1.5 2.5 1.5Z" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7.5 1.5V4H10" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Source: {{ source.title ?? 'Untitled' }} · chunk {{ (source.chunk_index ?? 0) + 1 }}
+            </span>
+          </div>
 
-    <!-- Empty State: Nothing renders -->
-    <template v-else-if="!content">
-    </template>
+          <!-- Error state -->
+          <div v-if="hasError" class="message__error" role="alert">{{ errorMessage }}</div>
 
-    <!-- Populated State -->
-    <template v-else>
-      <div class="chat-message__bubble">
-        <p class="chat-message__text">{{ content }}</p>
-        <!-- Streaming cursor -->
-        <span v-if="isStreaming" class="chat-message__cursor" aria-label="Streaming response in progress"></span>
-      </div>
-
-      <!-- Source Chips (assistant only) -->
-      <div v-if="role === 'assistant' && sources && sources.length > 0" class="chat-message__sources">
-        <span class="chat-message__sources-label">Sources</span>
-        <div class="chat-message__chips">
-          <span
-            v-for="(source, index) in sources"
-            :key="index"
-            class="chat-message__chip"
-          >
-            {{ source.title ?? 'Untitled' }}
-          </span>
+          <!-- Timestamp -->
+          <span class="message__time">Just now</span>
         </div>
       </div>
+    </template>
+
+    <!-- User Message: right-aligned, no avatar -->
+    <template v-else>
+      <div class="message__bubble">
+        <p class="message__text">{{ content }}</p>
+      </div>
+      <span class="message__time">Just now</span>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { SourceInfo } from '@/types';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
   content: string;
   isStreaming?: boolean;
-  sources?: SourceInfo[];
-  loading?: boolean;
+  sources?: readonly SourceInfo[];
   hasError?: boolean;
   errorMessage?: string;
 }
 
-withDefaults(defineProps<ChatMessageProps>(), {
+const props = withDefaults(defineProps<ChatMessageProps>(), {
   isStreaming: false,
-  loading: false,
   hasError: false,
   errorMessage: '',
 });
+
+const isWaiting = computed(() => props.isStreaming && !props.content);
 </script>
 
 <style scoped>
-/* ── Chat Message Container ── */
-.chat-message {
+/* ── Message Container ── */
+.message {
   display: flex;
   flex-direction: column;
-  max-width: 100%;
+  max-width: 72%;
 }
 
-.chat-message--user {
+.message--assistant {
+  align-self: flex-start;
+}
+
+.message--user {
+  align-self: flex-end;
   align-items: flex-end;
 }
 
-.chat-message--assistant {
+/* ── Assistant Row (avatar + body) ── */
+.message__row {
+  display: flex;
   align-items: flex-start;
+  gap: var(--spacing-sm);
+}
+
+/* ── Avatar ── */
+.message__avatar {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: var(--font-weight-strong);
+  line-height: 1;
+  transition: background var(--transition-slow);
+}
+
+/* ── Body ── */
+.message__body {
+  flex: 1;
+  min-width: 0;
 }
 
 /* ── Message Bubble ── */
-.chat-message__bubble {
-  max-width: 85%;
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-relaxed);
-  color: var(--color-text-primary);
-  position: relative;
+.message--assistant .message__bubble {
+  padding: var(--spacing-xs) 0 var(--spacing-xs) var(--spacing-lg);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-chat);
+  color: var(--color-text-body);
+  background: none;
+  border-left: 3px solid var(--color-msg-accent-bar);
+  transition:
+    color var(--transition-slow),
+    border-color var(--transition-slow);
 }
 
-.chat-message--user .chat-message__bubble {
-  background: var(--color-bg-tertiary);
-  border-radius: var(--radius-md);
+.message--user .message__bubble {
+  padding: var(--spacing-sm) 15px;
+  border-radius: var(--radius-lg) var(--radius-lg) 2px var(--radius-lg);
+  background: var(--color-user-bubble-bg);
+  border: 1px solid var(--color-user-bubble-bd);
+  color: var(--color-user-bubble-text);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-chat);
+  transition:
+    background var(--transition-slow),
+    border-color var(--transition-slow),
+    color var(--transition-slow);
 }
 
-.chat-message--assistant .chat-message__bubble {
-  background: transparent;
-  border-left: var(--border-width-thick) solid var(--color-accent);
-  border-radius: 0;
-}
-
-.chat-message__text {
+.message__text {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 /* ── Streaming Cursor ── */
-.chat-message__cursor {
+.message__streaming-indicator {
   display: inline-block;
-  width: var(--spacing-sm);
-  height: var(--font-size-base);
-  background: var(--color-accent);
-  vertical-align: text-bottom;
-  animation: blink-cursor 1s step-end infinite;
+  animation: blink 1s step-end infinite;
+  color: var(--color-accent);
+  font-weight: var(--font-weight-body);
+  margin-left: 1px;
+  transition: color var(--transition-slow);
 }
 
-@keyframes blink-cursor {
+@keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
 
-/* ── Source Chips ── */
-.chat-message__sources {
-  margin-top: var(--spacing-sm);
+/* ── Typing Indicator Dots ── */
+.message__typing {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
+  align-items: center;
+  gap: 4px;
+  height: calc(var(--font-size-body) * var(--line-height-chat));
 }
 
-.chat-message__sources-label {
-  font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-secondary);
-  letter-spacing: var(--letter-spacing-wider);
-  text-transform: uppercase;
-  margin-left: var(--spacing-md);
+.message__typing-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.3;
+  animation: typing-dot 1.2s ease-in-out infinite;
+  transition: background var(--transition-slow);
 }
 
-.chat-message__chips {
+.message__typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.message__typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* ── Source Chips ── */
+.message__sources {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-xs);
-  margin-left: var(--spacing-md);
+  gap: 6px;
+  margin-top: var(--spacing-sm);
+  margin-left: 2px;
 }
 
-.chat-message__chip {
-  display: inline-block;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--color-accent-bg);
-  color: var(--color-accent);
-  font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  border-radius: var(--radius-sm);
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ── Skeleton (Loading State) ── */
-.chat-message__skeleton {
-  padding: var(--spacing-sm) var(--spacing-md);
+.source-chip {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  max-width: 60%;
-}
-
-.skeleton-line {
-  height: var(--font-size-base);
-  background: var(--color-bg-tertiary);
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  background: var(--color-accent-chip-bg);
+  border: 1px solid var(--color-accent-chip-bd);
   border-radius: var(--radius-sm);
-  animation: shimmer 1.5s ease-in-out infinite;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-body);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  transition:
+    background var(--transition-slow),
+    border-color var(--transition-slow),
+    color var(--transition-slow);
 }
 
-.skeleton-line--short {
-  width: 40%;
+.source-chip svg {
+  color: var(--color-accent);
+  flex-shrink: 0;
+  transition: color var(--transition-slow);
 }
 
-.skeleton-line--medium {
-  width: 70%;
+/* ── Timestamps ── */
+.message__time {
+  font-family: var(--font-display);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-body);
+  font-style: italic;
+  color: var(--color-text-subtle);
+  margin-top: 5px;
+  padding: 0 var(--spacing-xs);
+  transition: color var(--transition-slow);
 }
 
-.skeleton-line--long {
-  width: 100%;
-}
-
-@keyframes shimmer {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
+.message--user .message__time {
+  text-align: right;
 }
 
 /* ── Error State ── */
-.chat-message__error {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: rgba(224, 108, 108, 0.08);
-  border-left: var(--border-width-thick) solid var(--color-error);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
+.message__error {
   color: var(--color-error);
-}
-
-.chat-message__error-icon {
-  flex-shrink: 0;
-  font-size: var(--font-size-md);
-}
-
-.chat-message__error-text {
-  color: var(--color-error);
+  font-size: var(--font-size-caption);
+  margin-top: var(--spacing-sm);
+  padding-left: 18px;
+  font-style: italic;
+  transition: color var(--transition-slow);
 }
 
 /* ── Responsive ── */
 @media (max-width: 500px) {
-  .chat-message__bubble {
-    max-width: 95%;
-  }
-
-  .chat-message__chip {
-    max-width: 140px;
+  .message {
+    max-width: 90%;
   }
 }
 </style>
