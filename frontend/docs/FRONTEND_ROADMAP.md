@@ -8,12 +8,14 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Active Phase** | Phase 2 — Chat Interface (Core RAG) |
+| **Active Phase** | Phase 3 — Document Management |
 | **Phase 1 Status** | ✅ Complete (2026-07-17) |
+| **Phase 2 Status** | ✅ Complete (2026-07-17) |
 | **Design Mockup** | [Preview URL](http://127.0.0.1:7456/api/projects/vector-vault-chat-mockup-e5d4/raw/index.html) |
 | **Design System** | "The Scholar's Study" — warm light theme (parchment `#faf8f5`, amber accent `#c4952e`, navy text `#1B2A3A`) |
 | **Design Baseline** | Complete — 6 files in `.opencode/context/` |
 | **Last Updated** | 2026-07-17 |
+| **Mockup Alignment** | ✅ Complete (2026-07-17) — all components now match mockup CSS |
 
 ---
 
@@ -22,7 +24,7 @@
 | Phase | Name | Status | Core Deliverable |
 |-------|------|--------|------------------|
 | **1** | Foundation & Design Baseline | ✅ Complete | Scaffold, tokens, static shell |
-| **2** | Chat Interface (Core RAG) | 🟡 Next | Working chat with SSE streaming |
+| **2** | Chat Interface (Core RAG) | ✅ Complete | Working chat with SSE streaming |
 | **3** | Document Management | ⬜ Pending | Upload, list, delete documents |
 | **4** | Integration & Polish | ⬜ Pending | Error states, responsive, health check |
 
@@ -104,12 +106,12 @@ Event sequence: 0..N token events → 1 sources event → 1 done event (or 1 err
 
 ### Pending Tasks
 
-- [ ] `src/composables/useChat.ts` — full composable with SSE stream parsing
-- [ ] `src/composables/useConversationId.ts` — persist conversation_id in localStorage
-- [ ] Update `ChatView.vue` — wire useChat, auto-scroll, empty state
-- [ ] Update `ChatMessage.vue` — real data binding, streaming cursor, source chips
-- [ ] Update `ChatInput.vue` — submit handler, Enter key, disabled state
-- [ ] Error handling for SSE connection drops, timeouts
+- [x] `src/composables/useChat.ts` — full composable with SSE stream parsing
+- [x] `src/composables/useConversationId.ts` — persist conversation_id in localStorage
+- [x] Update `ChatView.vue` — wire useChat, auto-scroll, empty state
+- [x] Update `ChatMessage.vue` — real data binding, streaming cursor, source chips
+- [x] Update `ChatInput.vue` — submit handler, Enter key, disabled state
+- [x] Error handling for SSE connection drops, timeouts
 - [ ] Verify with real backend: send message, see streaming response, see sources
 
 ### Phase 2 Completion Criteria
