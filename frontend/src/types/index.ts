@@ -41,6 +41,17 @@ export type SSEEvent =
   | DoneEventData
   | ErrorEventData;
 
+// ── Frontend-Only Display Models ──
+
+export interface ChatMessageModel {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  sources: SourceInfo[];
+  isStreaming: boolean;
+  error: string | null;
+}
+
 // ── Documents (from documents.py + domain/documents.py) ──
 
 export type DocumentType = ".md" | ".pdf";

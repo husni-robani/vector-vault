@@ -15,6 +15,14 @@ const API_BASE = 'http://localhost:8000/api';
 /**
  * Send a chat message and stream the SSE response.
  * POST /api/chats → SSE stream yielding token, sources, done, error events.
+ *
+ * Backend uses FastAPI ServerSentEvent producing standard SSE format:
+ *   data: {"type":"token","content":"..."}
+ *   data: {"type":"sources","sources":[...]}
+ *   event: done
+ *   data: {"type":"done","conversation_id":"..."}
+ *   event: error
+ *   data: {"type":"error","message":"..."}
  */
 export async function* streamChat(
   request: ChatRequest
@@ -37,6 +45,7 @@ export async function* streamChat(
 
   const decoder = new TextDecoder();
   let buffer = '';
+  let dataChunks: string[] = [];
 
   try {
     while (true) {
@@ -45,28 +54,66 @@ export async function* streamChat(
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
+      // Keep the last partial line in the buffer
       buffer = lines.pop() ?? '';
 
       for (const line of lines) {
         const trimmed = line.trim();
-        if (trimmed.length === 0) continue;
 
-        try {
-          const event: SSEEvent = JSON.parse(trimmed);
-          yield event;
-        } catch {
-          // Skip malformed lines
+        // Empty line = event boundary → flush accumulated data
+        if (trimmed.length === 0) {
+          if (dataChunks.length > 0) {
+            const dataStr = dataChunks.join('\n');
+            dataChunks = [];
+            try {
+              const event: SSEEvent = JSON.parse(dataStr);
+              yield event;
+            } catch {
+              // Skip malformed SSE data payload
+            }
+          }
+          continue;
         }
+
+        // Event type line — store for context but don't expose yet
+        if (trimmed.startsWith('event:')) {
+          continue;
+        }
+
+        // Retry line — store for potential reconnection logic
+        if (trimmed.startsWith('retry:')) {
+          continue;
+        }
+
+        // ID line — standard SSE field
+        if (trimmed.startsWith('id:')) {
+          continue;
+        }
+
+        // Comment line (starts with colon) — skip per SSE spec
+        if (trimmed.startsWith(':')) {
+          continue;
+        }
+
+        // Data line — accumulate (SSE events can span multiple data: lines)
+        if (trimmed.startsWith('data:')) {
+          const payload = trimmed.slice(5).trimStart();
+          dataChunks.push(payload);
+          continue;
+        }
+
+        // Unknown line — skip gracefully
       }
     }
 
-    // Flush remaining buffer
-    if (buffer.trim().length > 0) {
+    // Flush any remaining data after stream ends
+    if (dataChunks.length > 0) {
+      const dataStr = dataChunks.join('\n');
       try {
-        const event: SSEEvent = JSON.parse(buffer.trim());
+        const event: SSEEvent = JSON.parse(dataStr);
         yield event;
       } catch {
-        // Skip malformed final line
+        // Skip malformed final event
       }
     }
   } finally {
