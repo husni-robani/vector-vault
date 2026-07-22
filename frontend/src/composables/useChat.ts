@@ -1,5 +1,6 @@
 // Vector Vault — Chat State & SSE Streaming
 // Core composable driving the RAG chat experience.
+// Phase 4: SSE reconnection with exponential backoff.
 
 import { ref, computed, readonly, nextTick, type Ref, type ComputedRef } from 'vue';
 import { streamChat } from '@/api/client';
@@ -14,11 +15,28 @@ function generateMessageId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
+/**
+ * Exponential backoff for reconnection attempts.
+ * Sequence: 1s, 2s, 4s, 8s, 16s, 32s (capped at 30s).
+ */
+function getBackoff(retryNumber: number): number {
+  return Math.min(1000 * Math.pow(2, retryNumber), 30000);
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/** Maximum number of automatic reconnection attempts. */
+const MAX_RETRIES = 3;
+
 export function useChat() {
   // ── State ──
   const messages: Ref<ChatMessageModel[]> = ref([]);
   const isStreaming: Ref<boolean> = ref(false);
   const error: Ref<string | null> = ref(null);
+  const isReconnecting: Ref<boolean> = ref(false);
+  const retryCount: Ref<number> = ref(0);
 
   const { conversationId, newConversation, setConversationId } = useConversationId();
 
@@ -33,14 +51,18 @@ export function useChat() {
 
   /**
    * Send a user message and stream the assistant response via SSE.
-   * Handles token-by-token accumulation, source citations, error events,
-   * and connection failures.
+   * Handles reconnection with exponential backoff on network failures.
+   * Blocks during streaming or reconnection.
    */
   async function sendMessage(text: string): Promise<void> {
-    // Guard: don't send while already streaming
-    if (isStreaming.value) return;
+    // Guard: don't send while already streaming or reconnecting
+    if (isStreaming.value || isReconnecting.value) return;
 
-    // 1. Push user message
+    // Reset retry state on fresh send
+    retryCount.value = 0;
+    isReconnecting.value = false;
+
+    // Push user message
     const userMsg: ChatMessageModel = {
       id: generateMessageId(),
       role: 'user',
@@ -51,7 +73,45 @@ export function useChat() {
     };
     messages.value = [...messages.value, userMsg];
 
-    // 2. Push empty assistant message (placeholder for streaming)
+    await _sendMessageWithRetry(text);
+  }
+
+  /**
+   * Retry wrapper: calls _sendMessageOnce with exponential backoff on failure.
+   * Does NOT push the user message — that's done by sendMessage().
+   */
+  async function _sendMessageWithRetry(text: string): Promise<void> {
+    try {
+      await _sendMessageOnce(text);
+    } catch {
+      retryCount.value++;
+      if (retryCount.value < MAX_RETRIES) {
+        isReconnecting.value = true;
+        await wait(getBackoff(retryCount.value - 1));
+        await _sendMessageWithRetry(text);
+      } else {
+        // Max retries exhausted — error state already set by _sendMessageOnce
+        isReconnecting.value = false;
+      }
+    }
+  }
+
+  /**
+   * Core streaming logic: pushes assistant message, consumes SSE events.
+   * On network failure, throws so the retry wrapper can re-attempt.
+   * On server-sent error events, returns without throwing (final state).
+   */
+  async function _sendMessageOnce(text: string): Promise<void> {
+    // If reconnecting, remove the partial assistant message from the previous attempt
+    if (retryCount.value > 0) {
+      const msgs = [...messages.value];
+      if (msgs.length > 0 && msgs[msgs.length - 1].role === 'assistant') {
+        msgs.pop();
+      }
+      messages.value = msgs;
+    }
+
+    // Push fresh assistant message placeholder
     const assistantMsg: ChatMessageModel = {
       id: generateMessageId(),
       role: 'assistant',
@@ -62,35 +122,30 @@ export function useChat() {
     };
     messages.value = [...messages.value, assistantMsg];
 
-    // 3. Enter streaming state
     isStreaming.value = true;
     error.value = null;
+    isReconnecting.value = false;
 
     try {
-      // 4. Start SSE stream
       const eventStream = streamChat({
         message: text,
         conversation_id: conversationId.value,
       });
 
-      // 5. Consume SSE events
       for await (const event of eventStream) {
         const msgIndex = messages.value.length - 1;
         const current = messages.value[msgIndex];
 
         switch (event.type) {
           case 'token':
-            // Append token content to the growing assistant message
             messages.value[msgIndex] = {
               ...current,
               content: current.content + event.content,
             };
-            // Allow Vue to flush DOM updates before next token
             await nextTick();
             break;
 
           case 'sources':
-            // Attach source citations to the assistant message
             messages.value[msgIndex] = {
               ...current,
               sources: event.sources as SourceInfo[],
@@ -98,12 +153,10 @@ export function useChat() {
             break;
 
           case 'done':
-            // Mark streaming complete
             messages.value[msgIndex] = {
               ...current,
               isStreaming: false,
             };
-            // Persist conversation_id if the backend provides one
             if (event.conversation_id) {
               setConversationId(event.conversation_id);
             }
@@ -111,7 +164,6 @@ export function useChat() {
             break;
 
           case 'error':
-            // Mark message as errored and set global error
             messages.value[msgIndex] = {
               ...current,
               isStreaming: false,
@@ -119,22 +171,25 @@ export function useChat() {
             };
             error.value = event.message;
             isStreaming.value = false;
-            break;
+            // Server-sent errors are final — don't retry
+            return;
         }
       }
     } catch {
-      // Fetch or stream-level error (connection drop, network failure)
+      // Network error — mark the partial message, then throw for retry
       const msgIndex = messages.value.length - 1;
       if (msgIndex >= 0) {
         messages.value[msgIndex] = {
           ...messages.value[msgIndex],
           isStreaming: false,
-          error: 'Connection lost. Please try again.',
         };
       }
-      error.value = 'Connection lost. Please try again.';
-    } finally {
       isStreaming.value = false;
+      throw new Error('Connection lost');
+    } finally {
+      if (!isReconnecting.value) {
+        isStreaming.value = false;
+      }
     }
   }
 
@@ -165,7 +220,7 @@ export function useChat() {
     }
     messages.value = msgs;
 
-    // Re-send
+    // Re-send (this resets retry state and pushes a new user message)
     await sendMessage(lastUserText);
   }
 
@@ -174,6 +229,8 @@ export function useChat() {
     messages.value = [];
     error.value = null;
     isStreaming.value = false;
+    isReconnecting.value = false;
+    retryCount.value = 0;
   }
 
   /** Start a new conversation: generate fresh ID and clear messages. */
@@ -192,6 +249,7 @@ export function useChat() {
     messages: readonly(messages),
     isStreaming: readonly(isStreaming),
     error: readonly(error),
+    isReconnecting: readonly(isReconnecting),
     messageCount,
     lastMessage,
     sendMessage,
