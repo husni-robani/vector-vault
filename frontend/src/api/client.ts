@@ -166,7 +166,15 @@ export async function uploadDocument(
 
   if (!response.ok) {
     const body = await response.text().catch(() => '');
-    throw new Error(`Upload API error: ${response.status}${body ? ` — ${body}` : ''}`);
+    // Try to extract the server's error message from JSON
+    try {
+      const parsed = JSON.parse(body);
+      throw new Error(parsed.message ?? `Upload failed (${response.status})`);
+    } catch (e) {
+      // Rethrow if it's already our parsed error, otherwise build a fallback
+      if (e instanceof Error && e.message !== body) throw e;
+      throw new Error(`Upload failed (${response.status})`);
+    }
   }
 
   return response.json() as Promise<SuccessResponse<DocumentUploadResponse>>;
