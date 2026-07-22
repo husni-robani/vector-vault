@@ -5,9 +5,12 @@
       <div class="message__row">
         <div class="message__avatar">V</div>
         <div class="message__body">
-          <div class="message__bubble">
+          <div
+            class="message__bubble"
+            :aria-live="isStreaming ? 'polite' : undefined"
+          >
             <!-- Waiting indicator: animated dots before first token -->
-            <span v-if="isWaiting" class="message__typing" aria-label="Assistant is typing">
+            <span v-if="isWaiting" class="message__typing" aria-label="Assistant is typing" role="status">
               <span class="message__typing-dot" />
               <span class="message__typing-dot" />
               <span class="message__typing-dot" />

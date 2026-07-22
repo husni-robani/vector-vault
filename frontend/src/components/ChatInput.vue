@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 interface ChatInputProps {
   disabled?: boolean;
@@ -53,6 +53,22 @@ function handleSubmit(): void {
   emit('submit', value);
   textarea.value = '';
 }
+
+// ── Keyboard Shortcut: / key to focus input ──
+function onKeyDown(e: KeyboardEvent): void {
+  // Don't capture if user is typing in another input or textarea
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+  // Don't capture if modifier keys are pressed
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+  if (e.key === '/') {
+    e.preventDefault();
+    textareaRef.value?.focus();
+  }
+}
+
+onMounted(() => document.addEventListener('keydown', onKeyDown));
+onUnmounted(() => document.removeEventListener('keydown', onKeyDown));
 </script>
 
 <style scoped>
@@ -150,6 +166,17 @@ function handleSubmit(): void {
 @media (max-width: 500px) {
   .chat-input-bar {
     padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  /* Touch-friendly send button: 44px minimum tap target */
+  .chat-input-bar__send {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Prevent iOS zoom on focus */
+  .chat-input-bar__textarea {
+    font-size: 16px;
   }
 }
 </style>
