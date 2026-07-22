@@ -8,14 +8,16 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Active Phase** | Phase 3 — Document Management |
+| **Active Phase** | Phase 4 — Integration & Polish (next) |
 | **Phase 1 Status** | ✅ Complete (2026-07-17) |
-| **Phase 2 Status** | ✅ Complete (2026-07-17) |
+| **Phase 2 Status** | ✅ Complete (2026-07-22) |
+| **Phase 3 Status** | ✅ Complete (2026-07-22) |
+| **Phase 3 Plan** | Archived → `docs/archive/FRONTEND_PLAN-phase3-document-management.md` |
 | **Design Mockup** | [Preview URL](http://127.0.0.1:7456/api/projects/vector-vault-chat-mockup-e5d4/raw/index.html) |
 | **Design System** | "The Scholar's Study" — warm light theme (parchment `#faf8f5`, amber accent `#c4952e`, navy text `#1B2A3A`) |
 | **Design Baseline** | Complete — 6 files in `.opencode/context/` |
-| **Last Updated** | 2026-07-17 |
-| **Mockup Alignment** | ✅ Complete (2026-07-17) — all components now match mockup CSS |
+| **Git Branch** | `feat/phase3-document-management` |
+| **Last Updated** | 2026-07-22 |
 
 ---
 
@@ -25,7 +27,7 @@
 |-------|------|--------|------------------|
 | **1** | Foundation & Design Baseline | ✅ Complete | Scaffold, tokens, static shell |
 | **2** | Chat Interface (Core RAG) | ✅ Complete | Working chat with SSE streaming |
-| **3** | Document Management | ⬜ Pending | Upload, list, delete documents |
+| **3** | Document Management | ✅ Complete | Upload, list, delete documents |
 | **4** | Integration & Polish | ⬜ Pending | Error states, responsive, health check |
 
 ---
@@ -165,14 +167,14 @@ Event sequence: 0..N token events → 1 sources event → 1 done event (or 1 err
 
 ### Pending Tasks
 
-- [ ] `src/composables/useDocuments.ts` — full composable
-- [ ] `src/components/DocumentUpload.vue` — drag-and-drop zone
-- [ ] `src/components/DocumentList.vue` — document cards list
-- [ ] Update `ChatView.vue` sidebar to use real components
-- [ ] File type and size validation
-- [ ] Upload progress tracking
-- [ ] Delete confirmation flow
-- [ ] Pagination support
+- [x] `src/composables/useDocuments.ts` — full composable (2026-07-22)
+- [x] `src/components/DocumentUpload.vue` — drag-and-drop zone (2026-07-22)
+- [x] `src/components/DocumentList.vue` — document cards list (2026-07-22)
+- [x] Update `ChatView.vue` sidebar to use real components (2026-07-22)
+- [x] File type and size validation (2026-07-22)
+- [x] Upload progress tracking (2026-07-22)
+- [x] Delete confirmation flow (2026-07-22)
+- [x] Pagination support (2026-07-22)
 
 ### Phase 3 Completion Criteria
 
