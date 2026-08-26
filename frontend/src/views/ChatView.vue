@@ -1,8 +1,24 @@
 <template>
   <div class="chat-view">
+    <!-- Sidebar Backdrop (mobile overlay) -->
+    <Transition name="backdrop">
+      <div
+        v-if="sidebarState?.isSidebarOpen.value"
+        class="sidebar-backdrop"
+        aria-hidden="true"
+        @click="sidebarState?.closeSidebar()"
+      ></div>
+    </Transition>
+
     <!-- Sidebar -->
-    <aside class="sidebar">
-      <!-- Upload Button (now a component) -->
+    <aside
+      ref="sidebarRef"
+      class="sidebar"
+      :class="{ 'sidebar--open': sidebarState?.isSidebarOpen.value }"
+      :tabindex="sidebarState?.isSidebarOpen.value ? -1 : undefined"
+      @keydown.tab="onSidebarTab"
+    >
+      <!-- Upload Button -->
       <DocumentUpload
         :disabled="isUploading"
         :error="uploadError"
@@ -12,7 +28,7 @@
       <!-- Section Label -->
       <span class="sidebar__section-label">Documents</span>
 
-      <!-- Document List (now a component) -->
+      <!-- Document List -->
       <DocumentList
         :documents="documents"
         :is-loading="docsLoading"
@@ -26,7 +42,7 @@
     </aside>
 
     <!-- Chat Panel -->
-    <main class="chat-panel">
+    <main id="chat-panel" class="chat-panel">
       <!-- Error Banner -->
       <div v-if="error" class="chat-error-banner" role="alert">
         <span class="chat-error-banner__icon">&#x26A0;</span>
@@ -68,9 +84,21 @@
         />
       </div>
 
+      <!-- Reconnecting Banner -->
+      <Transition name="reconnecting">
+        <div v-if="isReconnecting" class="reconnecting-banner" role="status">
+          <span class="reconnecting-banner__dots">
+            <span class="reconnecting-banner__dot" />
+            <span class="reconnecting-banner__dot" />
+            <span class="reconnecting-banner__dot" />
+          </span>
+          Reconnecting...
+        </div>
+      </Transition>
+
       <!-- Input Bar -->
       <ChatInput
-        :disabled="isStreaming"
+        :disabled="isStreaming || isReconnecting"
         placeholder="Ask anything about your documents..."
         @submit="onSubmit"
       />
@@ -79,16 +107,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, inject } from 'vue';
 import ChatMessage from '@/components/ChatMessage.vue';
 import ChatInput from '@/components/ChatInput.vue';
 import DocumentUpload from '@/components/DocumentUpload.vue';
 import DocumentList from '@/components/DocumentList.vue';
 import { useChat } from '@/composables/useChat';
 import { useDocuments } from '@/composables/useDocuments';
+import type { Ref } from 'vue';
 
 // ── Chat State ──
-const { messages, isStreaming, error, sendMessage, retryLastMessage, newChat, dismissError } = useChat();
+const { messages, isStreaming, isReconnecting, error, sendMessage, retryLastMessage, newChat, dismissError } = useChat();
 
 // ── Documents State ──
 const {
@@ -104,6 +133,67 @@ const {
   uploadDocument,
   deleteDocument,
 } = useDocuments();
+
+// ── Sidebar State (injected from App.vue) ──
+const sidebarRef = ref<HTMLElement | null>(null);
+
+const sidebarState = inject<{
+  isSidebarOpen: Ref<boolean>;
+  toggleSidebar: () => void;
+  closeSidebar: () => void;
+}>('sidebarState');
+
+// ── Sidebar Focus Trap ──
+// Watch for sidebar opening → auto-focus the sidebar
+watch(
+  () => sidebarState?.isSidebarOpen.value,
+  (isOpen) => {
+    if (isOpen) {
+      nextTick(() => {
+        sidebarRef.value?.focus();
+      });
+    }
+  }
+);
+
+/**
+ * Focus trap: when the sidebar is open, Tab and Shift+Tab cycle
+ * through focusable elements within the sidebar only.
+ */
+function onSidebarTab(e: KeyboardEvent): void {
+  if (!sidebarState?.isSidebarOpen.value) return;
+  const sidebarEl = sidebarRef.value;
+  if (!sidebarEl) return;
+
+  const focusableSelector = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'textarea:not([disabled])',
+    'select:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+  ].join(',');
+
+  const focusables = sidebarEl.querySelectorAll<HTMLElement>(focusableSelector);
+  if (focusables.length === 0) return;
+
+  const firstFocusable = focusables[0];
+  const lastFocusable = focusables[focusables.length - 1];
+
+  if (e.shiftKey) {
+    // Shift+Tab: if at first element, wrap to last
+    if (document.activeElement === firstFocusable) {
+      e.preventDefault();
+      lastFocusable.focus();
+    }
+  } else {
+    // Tab: if at last element, wrap to first
+    if (document.activeElement === lastFocusable) {
+      e.preventDefault();
+      firstFocusable.focus();
+    }
+  }
+}
 
 // ── Load documents on mount ──
 onMounted(() => {
@@ -190,6 +280,7 @@ function onSubmit(text: string): void {
   padding: var(--spacing-xl) var(--spacing-lg);
   gap: var(--spacing-lg);
   overflow-y: auto;
+  outline: none;
 }
 
 /* Section Label */
@@ -201,6 +292,11 @@ function onSubmit(text: string): void {
   color: var(--color-text-muted);
   letter-spacing: 0.3px;
   padding: var(--spacing-xs) var(--spacing-xs) 0;
+}
+
+/* ── Sidebar Backdrop (mobile) ── */
+.sidebar-backdrop {
+  display: none;
 }
 
 /* ── Chat Panel ── */
@@ -279,6 +375,84 @@ function onSubmit(text: string): void {
   color: var(--color-accent);
 }
 
+/* ── Reconnecting Banner ── */
+.reconnecting-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  margin: 0 var(--spacing-2xl);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  color: var(--color-accent);
+  line-height: var(--line-height-body);
+  transition:
+    background var(--transition-slow),
+    color var(--transition-slow);
+}
+
+.reconnecting-banner__dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reconnecting-banner__dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.3;
+  animation: typing-dot 1.2s ease-in-out infinite;
+  transition: background var(--transition-slow);
+}
+
+.reconnecting-banner__dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.reconnecting-banner__dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Reconnecting banner transition */
+.reconnecting-enter-active,
+.reconnecting-leave-active {
+  transition:
+    opacity var(--transition-normal),
+    max-height var(--transition-normal);
+}
+
+.reconnecting-enter-from,
+.reconnecting-leave-to {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+.reconnecting-enter-to,
+.reconnecting-leave-from {
+  opacity: 1;
+  max-height: 50px;
+}
+
 /* ── Error Banner ── */
 .chat-error-banner {
   display: flex;
@@ -342,7 +516,7 @@ function onSubmit(text: string): void {
   color: var(--color-text-body);
 }
 
-/* ── Responsive ── */
+/* ── Responsive: Tablet ── */
 @media (max-width: 900px) {
   .sidebar {
     width: 240px;
@@ -350,9 +524,45 @@ function onSubmit(text: string): void {
   }
 }
 
+/* ── Responsive: Mobile ── */
 @media (max-width: 500px) {
+  /* Sidebar becomes an overlay drawer */
   .sidebar {
-    display: none;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+    box-shadow: var(--shadow-card-hover);
+    width: 280px;
+    min-width: 280px;
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+  }
+
+  /* Backdrop visible on mobile */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: var(--header-height);
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 99;
+  }
+
+  /* Backdrop transition */
+  .backdrop-enter-active,
+  .backdrop-leave-active {
+    transition: opacity var(--transition-normal);
+  }
+
+  .backdrop-enter-from,
+  .backdrop-leave-to {
+    opacity: 0;
   }
 
   .chat-messages {
@@ -361,6 +571,10 @@ function onSubmit(text: string): void {
 
   .chat-error-banner {
     margin: var(--spacing-sm) var(--spacing-md) 0;
+  }
+
+  .reconnecting-banner {
+    margin: 0 var(--spacing-md);
   }
 }
 </style>
