@@ -514,15 +514,15 @@ def get_use_case(use_case_class):
 
 ### Phase 5 — Frontend
 
-- [ ] Vue 3 + Vite project scaffold
-- [ ] `api/client.ts` — Axios/fetch wrapper for backend
-- [ ] `components/ChatMessage.vue` — Single message bubble
-- [ ] `components/ChatInput.vue` — Message input bar with send
-- [ ] `components/DocumentUpload.vue` — Drag & drop file upload
-- [ ] `components/DocumentList.vue` — List uploaded documents
-- [ ] `views/ChatView.vue` — Main chat page
-- [ ] Streaming response rendering (parse SSE token by token)
-- [ ] Integration: End-to-end test with sample documents
+- [x] Vue 3 + Vite project scaffold
+- [x] `api/client.ts` — Axios/fetch wrapper for backend
+- [x] `components/ChatMessage.vue` — Single message bubble
+- [x] `components/ChatInput.vue` — Message input bar with send
+- [x] `components/DocumentUpload.vue` — Drag & drop file upload
+- [x] `components/DocumentList.vue` — List uploaded documents
+- [x] `views/ChatView.vue` — Main chat page
+- [x] Streaming response rendering (parse SSE token by token)
+- [x] Integration: End-to-end test with sample documents
 
 ### Phase 6 — Polish & Robustness
 
