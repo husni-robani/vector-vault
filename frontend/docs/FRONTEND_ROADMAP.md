@@ -116,18 +116,18 @@ Event sequence: 0..N token events → 1 sources event → 1 done event (or 1 err
 - [x] Update `ChatMessage.vue` — real data binding, streaming cursor, source chips
 - [x] Update `ChatInput.vue` — submit handler, Enter key, disabled state
 - [x] Error handling for SSE connection drops, timeouts
-- [ ] Verify with real backend: send message, see streaming response, see sources
+- [x] Verify with real backend: send message, see streaming response, see sources
 
 ### Phase 2 Completion Criteria
 
 ```
-[ ] User types message, presses Enter, message appears in chat
-[ ] Assistant response streams token-by-token in real time
-[ ] Source citation chip appears below assistant response
-[ ] Input disabled during streaming, re-enabled on done/error
-[ ] Chat auto-scrolls to bottom on new tokens
-[ ] Error banner appears on connection failure with retry button
-[ ] Empty state shows intro message when no conversation history
+[x] User types message, presses Enter, message appears in chat
+[x] Assistant response streams token-by-token in real time
+[x] Source citation chip appears below assistant response
+[x] Input disabled during streaming, re-enabled on done/error
+[x] Chat auto-scrolls to bottom on new tokens
+[x] Error banner appears on connection failure with retry button
+[x] Empty state shows intro message when no conversation history
 ```
 
 ---
@@ -181,15 +181,15 @@ Event sequence: 0..N token events → 1 sources event → 1 done event (or 1 err
 ### Phase 3 Completion Criteria
 
 ```
-[ ] User can drag-and-drop a .md or .pdf file onto the upload zone
-[ ] User can click to browse and select a file
-[ ] Invalid file types show clear error message
-[ ] Files over 50MB show size error
-[ ] Uploaded document appears in sidebar list immediately
-[ ] Document list shows loading skeleton while fetching
-[ ] Empty sidebar shows helpful message with upload CTA
-[ ] Delete click shows confirmation, then removes document from list
-[ ] Chat still works — streaming and source citations intact
+[x] User can drag-and-drop a .md or .pdf file onto the upload zone
+[x] User can click to browse and select a file
+[x] Invalid file types show clear error message
+[x] Files over 50MB show size error
+[x] Uploaded document appears in sidebar list immediately
+[x] Document list shows loading skeleton while fetching
+[x] Empty sidebar shows helpful message with upload CTA
+[x] Delete click shows confirmation, then removes document from list
+[x] Chat still works — streaming and source citations intact
 ```
 
 ---
@@ -222,7 +222,7 @@ Event sequence: 0..N token events → 1 sources event → 1 done event (or 1 err
 - [x] Offline detection
 - [x] SSE reconnection on connection drop
 - [x] Visual QA pass (token compliance verified)
-- [ ] End-to-end test with real backend (requires running backend)
+- [x] End-to-end test with real backend (requires running backend)
 
 ### Phase 4 Completion Criteria
 
@@ -235,7 +235,7 @@ Event sequence: 0..N token events → 1 sources event → 1 done event (or 1 err
 [x] SSE reconnects automatically on connection loss
 [x] All component styles still reference CSS custom properties
 [x] Zero hardcoded colors, spacings, or font sizes
-[ ] End-to-end test with real backend (requires running backend server)
+[x] End-to-end test with real backend (requires running backend server)
 ```
 
 ---
