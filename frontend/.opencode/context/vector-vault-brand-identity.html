@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector Vault — Brand Identity System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment: #faf8f5;
+    --ivory: #faf9f5;
+    --navy: #1B2A3A;
+    --olive: #5e5d59;
+    --amber: #c4952e;
+    --amber-bright: #d4a43e;
+    --sand: #e8e6dc;
+    --charcoal: #1a1c22;
+    --dark-surface: #262420;
+    --dark-text: #f0ece4;
+    --canvas: #141314;
+    --gutter: 12px;
+  }
+
+  [data-theme="light"] {
+    --canvas: var(--parchment);
+    --panel-bg: var(--ivory);
+    --panel-text: var(--navy);
+    --panel-muted: var(--olive);
+    --panel-border: var(--sand);
+  }
+
+  [data-theme="dark"] {
+    --canvas: var(--charcoal);
+    --panel-bg: var(--dark-surface);
+    --panel-text: var(--dark-text);
+    --panel-muted: #8b8980;
+    --panel-border: rgba(255,255,255,0.06);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--canvas);
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--panel-text);
+    overflow-x: hidden;
+  }
+
+  body {
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: var(--gutter);
+    width: 100%;
+    max-width: 1440px;
+    aspect-ratio: 16 / 9;
+    max-height: min(90vh, 810px);
+  }
+
+  .panel {
+    background: var(--panel-bg);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--panel-border);
+  }
+
+  .panel.dark-panel {
+    --local-bg: var(--dark-surface);
+    --local-text: var(--dark-text);
+    --local-muted: #8b8980;
+    background: var(--local-bg);
+    color: var(--local-text);
+  }
+
+  .panel.light-panel {
+    --local-bg: var(--parchment);
+    --local-text: var(--navy);
+    --local-muted: var(--olive);
+    background: var(--local-bg);
+    color: var(--local-text);
+  }
+
+  .panel-1 { grid-column: 1 / 3; grid-row: 1; }
+  .panel-2 { grid-column: 3; grid-row: 1; }
+  .panel-3 { grid-column: 1; grid-row: 2; }
+  .panel-4 { grid-column: 2; grid-row: 2; }
+  .panel-5 { grid-column: 3; grid-row: 2; }
+  .panel-6 { grid-column: 1; grid-row: 3; }
+  .panel-7 { grid-column: 2; grid-row: 3; }
+  .panel-8 { grid-column: 3; grid-row: 3; }
+
+  .theme-toggle {
+    position: fixed; top: 16px; right: 16px; z-index: 100;
+    background: var(--panel-bg); border: 1px solid var(--panel-border);
+    color: var(--panel-text); font-family: 'Inter', sans-serif;
+    font-size: 12px; letter-spacing: 0.02em;
+    padding: 6px 14px; border-radius: 20px; cursor: pointer;
+    transition: background 0.3s, border-color 0.3s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .theme-toggle:hover { border-color: var(--amber); }
+  .theme-toggle .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--amber); transition: background 0.3s;
+  }
+
+  .logo-mark { width: 56px; height: 56px; flex-shrink: 0; }
+  .logo-mark.sm { width: 32px; height: 32px; }
+  .logo-mark.xs { width: 20px; height: 20px; }
+  .logo-mark.lg { width: 80px; height: 80px; }
+
+  .logo-row { display: flex; align-items: center; gap: 20px; }
+  .wordmark { font-family: 'EB Garamond', 'Georgia', serif; }
+  .wordmark-lg { font-size: 42px; font-weight: 500; letter-spacing: -0.01em; line-height: 1; }
+  .wordmark-md { font-size: 28px; font-weight: 500; letter-spacing: -0.01em; line-height: 1; }
+  .wordmark-sm { font-size: 18px; font-weight: 500; letter-spacing: -0.005em; line-height: 1; }
+
+  .tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; letter-spacing: 0.02em;
+    color: var(--local-muted); margin-top: 8px;
+  }
+
+  .panel-label {
+    position: absolute; top: 10px; left: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--local-muted); opacity: 0.6;
+  }
+
+  .panel-number {
+    position: absolute; bottom: 10px; right: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px; letter-spacing: 0.06em;
+    color: var(--local-muted); opacity: 0.4;
+  }
+
+  .construction-svg { width: 80%; max-width: 200px; height: auto; }
+  .construction-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--local-muted); margin-top: 10px;
+  }
+
+  .essence-text {
+    font-family: 'EB Garamond', 'Georgia', serif;
+    font-size: 26px; font-weight: 400; line-height: 1.25;
+    text-align: center; letter-spacing: -0.01em;
+    max-width: 80%;
+  }
+  .essence-accent {
+    width: 40px; height: 1px; background: var(--amber);
+    margin: 16px auto 0;
+  }
+
+  .swatch-row { display: flex; gap: 8px; margin-bottom: 6px; }
+  .swatch {
+    width: 32px; height: 32px; border-radius: 3px;
+    position: relative; flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+  .swatch-section { margin-bottom: 14px; }
+  .swatch-section-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--local-muted); margin-bottom: 6px;
+  }
+
+  .type-specimen {
+    display: flex; flex-direction: column; gap: 14px;
+    width: 80%; max-width: 260px;
+  }
+  .type-heading {
+    font-family: 'EB Garamond', 'Georgia', serif;
+    font-size: 24px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.1;
+  }
+  .type-body {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px; line-height: 1.55; color: var(--local-muted);
+    letter-spacing: 0;
+  }
+  .type-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--local-muted); opacity: 0.5;
+  }
+
+  .ui-mock { width: 80%; max-width: 260px; }
+  .ui-browser {
+    background: rgba(0,0,0,0.2); border-radius: 5px 5px 0 0;
+    padding: 5px 8px; display: flex; align-items: center; gap: 5px;
+  }
+  .ui-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+  .ui-dot:nth-child(1) { background: #e06c6c; }
+  .ui-dot:nth-child(2) { background: #d4a43e; }
+  .ui-dot:nth-child(3) { background: #6cb56c; }
+  .ui-body {
+    background: var(--parchment); border-radius: 0 0 5px 5px;
+    padding: 10px; min-height: 100px;
+  }
+  .ui-message {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; color: var(--navy); line-height: 1.5;
+    padding: 6px 8px; border-radius: 4px; margin-bottom: 6px;
+    letter-spacing: 0;
+  }
+  .ui-message.user { background: var(--sand); }
+  .ui-message.assistant {
+    background: transparent; border-left: 2px solid var(--amber);
+    padding-left: 8px;
+  }
+  .ui-input {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--ivory); border: 1px solid var(--sand);
+    border-radius: 4px; padding: 5px 8px; margin-top: 6px;
+  }
+  .ui-input-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; color: var(--olive); flex: 1;
+    letter-spacing: 0;
+  }
+
+  .atmosphere {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at 60% 40%, rgba(212,164,62,0.15) 0%, transparent 60%),
+                var(--local-bg);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .atmosphere-glow {
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(196,149,46,0.2) 0%, transparent 70%);
+    border-radius: 50%; position: absolute;
+  }
+  .atmosphere .logo-mark { opacity: 0.25; }
+  .atmosphere-texture {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 1px,
+      rgba(0,0,0,0.03) 1px, rgba(0,0,0,0.03) 2px
+    );
+  }
+
+  .physical-card {
+    width: 70%; max-width: 180px; aspect-ratio: 3 / 4;
+    background: var(--parchment); color: var(--navy);
+    border-radius: 4px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    position: relative;
+  }
+  .physical-card::after {
+    content: ''; position: absolute; inset: 6px;
+    border: 1px solid rgba(196,149,46,0.2);
+    border-radius: 2px; pointer-events: none;
+  }
+
+  @media (max-width: 900px) {
+    .board {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto;
+      aspect-ratio: auto;
+      max-height: none;
+    }
+    .panel-1 { grid-column: 1 / -1; }
+    .panel-2 { grid-column: 1; }
+    .panel-3 { grid-column: 2; }
+    .panel-4 { grid-column: 1; }
+    .panel-5 { grid-column: 2; }
+    .panel-6 { grid-column: 1; }
+    .panel-7 { grid-column: 2; }
+    .panel-8 { grid-column: 1 / -1; }
+    .wordmark-lg { font-size: 28px; }
+  }
+
+  @media (max-width: 500px) {
+    .board { grid-template-columns: 1fr; }
+    .panel-1, .panel-2, .panel-3, .panel-4,
+    .panel-5, .panel-6, .panel-7, .panel-8 { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" data-od-id="theme-toggle">
+  <span class="dot"></span>
+  <span class="theme-label">Light</span>
+</button>
+
+<div class="board" data-od-id="brand-board">
+
+  <!-- PANEL 1: Logo Cover -->
+  <div class="panel dark-panel panel-1" data-od-id="panel-logo-cover">
+    <span class="panel-label">01 · Logo Cover</span>
+    <div class="logo-row">
+      <svg class="logo-mark lg" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="28,4 48,14 48,36 28,46 8,36 8,14" fill="none" stroke="#d4a43e" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="28" cy="24" r="7" fill="#d4a43e"/>
+        <line x1="28" y1="17" x2="28" y2="6" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+        <line x1="28" y1="17" x2="47" y2="14" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+        <line x1="28" y1="17" x2="9" y2="14" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+        <line x1="28" y1="17" x2="40" y2="34" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+      </svg>
+      <div>
+        <div class="wordmark wordmark-lg" style="color:#f0ece4">Vector Vault</div>
+        <div class="tagline">Your knowledge. Illuminated.</div>
+      </div>
+    </div>
+    <span class="panel-number">01</span>
+  </div>
+
+  <!-- PANEL 2: Logo Construction -->
+  <div class="panel light-panel panel-2" data-od-id="panel-logo-construction">
+    <span class="panel-label">02 · Construction</span>
+    <svg class="construction-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="40" fill="none" stroke="#e8e6dc" stroke-width="0.5"/>
+      <polygon points="60,20 94,40 94,80 60,100 26,80 26,40"
+               fill="none" stroke="#c4952e" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="60" cy="56" r="12" fill="#c4952e" opacity="0.9"/>
+      <line x1="60" y1="44" x2="60" y2="22" stroke="#c4952e" stroke-width="0.8" opacity="0.5"/>
+      <line x1="60" y1="44" x2="93" y2="40" stroke="#c4952e" stroke-width="0.8" opacity="0.5"/>
+      <line x1="60" y1="44" x2="27" y2="40" stroke="#c4952e" stroke-width="0.8" opacity="0.5"/>
+      <line x1="60" y1="44" x2="77" y2="78" stroke="#c4952e" stroke-width="0.8" opacity="0.5"/>
+      <circle cx="60" cy="56" r="1.5" fill="#1B2A3A"/>
+      <line x1="60" y1="44" x2="60" y2="100" stroke="#e8e6dc" stroke-width="0.4" stroke-dasharray="2,3"/>
+      <line x1="60" y1="56" x2="93" y2="40" stroke="#e8e6dc" stroke-width="0.4" stroke-dasharray="2,3"/>
+      <text x="44" y="112" fill="#5e5d59" font-family="Inter,sans-serif" font-size="6" text-anchor="middle" letter-spacing="0.08em">28&times;28 VAULT GEOMETRY</text>
+    </svg>
+    <span class="construction-label">28&times;28 vault geometry</span>
+    <span class="panel-number">02</span>
+  </div>
+
+  <!-- PANEL 3: Digital Application -->
+  <div class="panel dark-panel panel-3" data-od-id="panel-digital-application">
+    <span class="panel-label">03 · Application</span>
+    <div class="ui-mock">
+      <div class="ui-browser">
+        <div class="ui-dot"></div><div class="ui-dot"></div><div class="ui-dot"></div>
+        <svg class="logo-mark xs" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg" style="margin-left:4px">
+          <polygon points="28,4 48,14 48,36 28,46 8,36 8,14" fill="none" stroke="#d4a43e" stroke-width="2.5" stroke-linejoin="round"/>
+          <circle cx="28" cy="24" r="7" fill="#d4a43e"/>
+          <line x1="28" y1="17" x2="28" y2="6" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+          <line x1="28" y1="17" x2="47" y2="14" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+          <line x1="28" y1="17" x2="9" y2="14" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+          <line x1="28" y1="17" x2="40" y2="34" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="ui-body">
+        <div class="ui-message user">What themes connect my reading notes on Borges and the metaphysics essay?</div>
+        <div class="ui-message assistant">Both texts explore the boundary between fiction and reality. Borges' labyrinths mirror the essay's argument that narrative structures shape our perception of truth.</div>
+        <div class="ui-input">
+          <span class="ui-input-text">Ask anything about your documents&hellip;</span>
+        </div>
+      </div>
+    </div>
+    <span class="panel-number">03</span>
+  </div>
+
+  <!-- PANEL 4: Brand Essence -->
+  <div class="panel light-panel panel-4" data-od-id="panel-brand-essence">
+    <span class="panel-label">04 · Brand Essence</span>
+    <div class="essence-text" style="color:#1B2A3A">
+      The private library<br>for everything you know.
+    </div>
+    <div class="essence-accent"></div>
+    <span class="panel-number">04</span>
+  </div>
+
+  <!-- PANEL 5: Color System -->
+  <div class="panel dark-panel panel-5" data-od-id="panel-color-system">
+    <span class="panel-label">05 · Color System</span>
+    <div style="width:80%; max-width:220px">
+      <div class="swatch-section">
+        <div class="swatch-section-label">Light Mode</div>
+        <div class="swatch-row">
+          <div class="swatch" style="background:#faf8f5"></div>
+          <div class="swatch" style="background:#faf9f5"></div>
+          <div class="swatch" style="background:#1B2A3A"></div>
+          <div class="swatch" style="background:#5e5d59"></div>
+        </div>
+      </div>
+      <div class="swatch-section">
+        <div class="swatch-section-label">Accent</div>
+        <div class="swatch-row">
+          <div class="swatch" style="background:#c4952e"></div>
+          <div class="swatch" style="background:#d4a43e"></div>
+          <div class="swatch" style="background:#e8e6dc"></div>
+        </div>
+      </div>
+      <div class="swatch-section">
+        <div class="swatch-section-label">Dark Mode</div>
+        <div class="swatch-row">
+          <div class="swatch" style="background:#1a1c22"></div>
+          <div class="swatch" style="background:#262420"></div>
+          <div class="swatch" style="background:#f0ece4"></div>
+        </div>
+      </div>
+    </div>
+    <span class="panel-number">05</span>
+  </div>
+
+  <!-- PANEL 6: Typography -->
+  <div class="panel light-panel panel-6" data-od-id="panel-typography">
+    <span class="panel-label">06 · Typography</span>
+    <div class="type-specimen">
+      <div>
+        <div class="type-label">Display · EB Garamond</div>
+        <div class="type-heading" style="font-size:22px">Vector Vault</div>
+      </div>
+      <div>
+        <div class="type-label">Heading · EB Garamond 500</div>
+        <div class="type-heading" style="font-size:16px; font-weight:500">The quick brown fox jumps over</div>
+      </div>
+      <div style="margin-top:4px">
+        <div class="type-label">Body · Inter 400</div>
+        <div class="type-body">Your personal knowledge, searchable and conversational. Upload documents and let the assistant find connections you'd never make alone.</div>
+      </div>
+    </div>
+    <span class="panel-number">06</span>
+  </div>
+
+  <!-- PANEL 7: Physical Application -->
+  <div class="panel dark-panel panel-7" data-od-id="panel-physical-application">
+    <span class="panel-label">07 · Physical</span>
+    <div class="physical-card">
+      <svg class="logo-mark" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="28,4 48,14 48,36 28,46 8,36 8,14" fill="none" stroke="#c4952e" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="28" cy="24" r="7" fill="#c4952e"/>
+        <line x1="28" y1="17" x2="28" y2="6" stroke="#c4952e" stroke-width="1" opacity="0.6"/>
+        <line x1="28" y1="17" x2="47" y2="14" stroke="#c4952e" stroke-width="1" opacity="0.6"/>
+        <line x1="28" y1="17" x2="9" y2="14" stroke="#c4952e" stroke-width="1" opacity="0.6"/>
+        <line x1="28" y1="17" x2="40" y2="34" stroke="#c4952e" stroke-width="1" opacity="0.6"/>
+      </svg>
+      <div class="wordmark wordmark-sm" style="color:#1B2A3A">Vector Vault</div>
+    </div>
+    <span class="panel-number">07</span>
+  </div>
+
+  <!-- PANEL 8: Image Direction / Atmosphere -->
+  <div class="panel dark-panel panel-8" data-od-id="panel-image-direction">
+    <span class="panel-label">08 · Image Direction</span>
+    <div class="atmosphere">
+      <div class="atmosphere-glow" style="top:30%; left:55%"></div>
+      <div class="atmosphere-glow" style="top:65%; left:35%; width:100px; height:100px; opacity:0.6"></div>
+      <div class="atmosphere-texture"></div>
+      <svg class="logo-mark" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="28,4 48,14 48,36 28,46 8,36 8,14" fill="none" stroke="#d4a43e" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="28" cy="24" r="7" fill="#d4a43e"/>
+        <line x1="28" y1="17" x2="28" y2="6" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+        <line x1="28" y1="17" x2="47" y2="14" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+        <line x1="28" y1="17" x2="9" y2="14" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+        <line x1="28" y1="17" x2="40" y2="34" stroke="#d4a43e" stroke-width="1.2" opacity="0.6"/>
+      </svg>
+    </div>
+    <span class="panel-number">08</span>
+  </div>
+
+</div>
+
+<script>
+  (function() {
+    const STORAGE_KEY = 'vv-brand-theme';
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+    updateToggleLabel();
+
+    window.toggleTheme = function() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem(STORAGE_KEY, next);
+      updateToggleLabel();
+    };
+
+    function updateToggleLabel() {
+      const btn = document.querySelector('.theme-toggle');
+      if (!btn) return;
+      const label = btn.querySelector('.theme-label');
+      const dot = btn.querySelector('.dot');
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      label.textContent = isLight ? 'Light' : 'Dark';
+      dot.style.background = 'var(--amber)';
+    }
+  })();
+</script>
+
+</body>
+</html>

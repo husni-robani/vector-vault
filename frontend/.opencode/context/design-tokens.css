@@ -1,0 +1,180 @@
+/* ==========================================================================
+   Vector Vault — Design Tokens
+   Extracted from vector-vault-chat-mockup HTML (Open Design)
+   "The Scholar's Study" — warm paper, serif headings, amber accents.
+   Source of truth: .opencode/context/design-tokens.css
+   Synced to: src/assets/styles/tokens.css (by ui-component-builder)
+   ========================================================================== */
+
+:root {
+  /* ── Background Surfaces (warm paper tones) ── */
+  --color-bg-canvas: #faf8f5;           /* Warm parchment — main background */
+  --color-bg-sidebar: #f4f0e9;          /* Slightly darker warm — sidebar */
+  --color-bg-header: #faf8f5;           /* Header bar background */
+  --color-bg-input-bar: #faf8f5;        /* Input area background */
+
+  /* ── Text Hierarchy (deep navy to warm muted grays) ── */
+  --color-text-primary: #1B2A3A;        /* Deep navy — headings, strong emphasis */
+  --color-text-body: #3d434a;           /* Warm dark gray — body copy, chat messages */
+  --color-text-muted: #6e716f;          /* Muted olive-gray — secondary text */
+  --color-text-subtle: #9a9690;         /* Warm subtle gray — placeholder, tertiary */
+
+  /* ── Accent (warm amber/gold — aged book spines, library lamps) ── */
+  --color-accent: #c4952e;              /* Warm amber — primary accent */
+  --color-accent-hover: #d4a83e;        /* Brighter amber — hover states */
+  --color-accent-soft: rgba(196, 149, 46, 0.10);   /* Subtle amber overlay */
+  --color-accent-border: rgba(196, 149, 46, 0.20);  /* Amber border tint */
+  --color-accent-chip-bg: rgba(196, 149, 46, 0.08); /* Source chip background */
+  --color-accent-chip-bd: rgba(196, 149, 46, 0.16); /* Source chip border */
+  --color-accent-glow: rgba(196, 149, 46, 0.25);    /* Focus ring, send button glow */
+  --color-accent-disabled: rgba(196, 149, 46, 0.25); /* Disabled accent controls */
+  --color-accent-disabled-text: rgba(255, 255, 255, 0.45);
+
+  /* ── Status ── */
+  --color-success: #5a8f4a;
+  --color-health-glow: rgba(90, 143, 74, 0.3);
+  --color-error: #a64b4b;               /* Warm red — destructive, error */
+  --color-error-soft: rgba(166, 75, 75, 0.08);
+
+  /* ── Cards & Surfaces (index-card feel) ── */
+  --color-surface-card: #fffefb;        /* Bright warm white — card background */
+  --color-surface-hover: rgba(196, 149, 46, 0.07); /* Hover highlight */
+  --color-surface-bubble: #f4f0e9;      /* Assistant message bubble (barely tinted) */
+  --color-surface-input: #f4f0e9;       /* Input textarea background */
+
+  /* ── Borders ── */
+  --color-border-subtle: rgba(0, 0, 0, 0.06);
+  --color-border-standard: rgba(0, 0, 0, 0.08);
+  --color-border-prominent: rgba(0, 0, 0, 0.12);
+
+  /* ── User Message Bubble (warm tinted, distinct from assistant) ── */
+  --color-user-bubble-bg: #f0ebe0;           /* Warm tinted background */
+  --color-user-bubble-bd: rgba(196, 149, 46, 0.15); /* Amber border */
+  --color-user-bubble-text: #2a3038;         /* Slightly cooler dark for contrast */
+
+  /* ── Assistant Message — marginalia left accent ── */
+  --color-msg-accent-bar: var(--color-accent);
+
+  /* ── Badge / Catalog Label ── */
+  --color-badge-bg: rgba(0, 0, 0, 0.04);
+  --color-badge-bd: rgba(0, 0, 0, 0.08);
+  --color-badge-md-text: #6b8a5e;            /* .md badge text */
+  --color-badge-md-bg: rgba(107, 138, 94, 0.10);
+  --color-badge-md-bd: rgba(107, 138, 94, 0.18);
+  --color-badge-pdf-text: #a64b4b;
+  --color-badge-pdf-bg: rgba(166, 75, 75, 0.10);
+  --color-badge-pdf-bd: rgba(166, 75, 75, 0.18);
+
+  /* ── Scrollbar ── */
+  --color-scrollbar-thumb: rgba(0, 0, 0, 0.10);
+  --color-scrollbar-thumb-hover: rgba(0, 0, 0, 0.18);
+
+  /* ── Shadows ── */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-button: none;
+  --shadow-input-focus: 0 0 0 3px var(--color-accent-glow);
+
+  /* ── Typography ── */
+  --font-display: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+
+  /* ── Font Sizes (mockup scale) ── */
+  --font-size-app-name: 22px;                  /* Header wordmark */
+  --font-size-body: 14px;                     /* Base body, chat messages, UI */
+  --font-size-small: 13px;                     /* Labels, secondary UI */
+  --font-size-meta: 12px;                      /* Document card metadata */
+  --font-size-caption: 11px;                   /* Source chips, timestamps */
+  --font-size-badge: 10px;                     /* File extension badges */
+
+  /* ── Font Weights ── */
+  --font-weight-body: 400;                     /* Regular body text */
+  --font-weight-emphasis: 500;                 /* Medium emphasis */
+  --font-weight-strong: 600;                   /* Strong emphasis, headings */
+
+  /* ── Line Heights ── */
+  --line-height-body: 1.5;                     /* UI, meta text */
+  --line-height-chat: 1.65;                    /* Chat messages — more breathing room */
+
+  /* ── Letter Spacing ── */
+  --letter-spacing-tight: -0.2px;              /* Display headings */
+  --letter-spacing-normal: 0;
+
+  /* ── Spacing ── */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 28px;
+
+  /* ── Border Radii ── */
+  --radius-sm: 3px;                            /* Source chips */
+  --radius-md: 5px;                             /* Buttons, cards, message bubbles */
+  --radius-lg: 8px;                              /* Textarea, large containers */
+  --radius-xl: 12px;                             /* Panels */
+  --radius-card: 6px;                            /* Document cards */
+  --radius-full: 9999px;                         /* Pills, round buttons */
+
+  /* ── Layout ── */
+  --header-height: 52px;
+  --sidebar-width: 300px;
+
+  /* ── Transitions ── */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+/* ==========================================================================
+   CSS Custom Properties — Dark Mode (study at night)
+   ========================================================================== */
+[data-theme="dark"] {
+  --color-bg-canvas: #1a1c22;
+  --color-bg-sidebar: #1f2128;
+  --color-bg-header: #1a1c22;
+  --color-bg-input-bar: #1a1c22;
+
+  --color-text-primary: #e8e4df;
+  --color-text-body: #b8b5ad;
+  --color-text-muted: #8a867e;
+  --color-text-subtle: #65615a;
+
+  --color-accent: #d4a43e;
+  --color-accent-hover: #e4b84e;
+  --color-accent-soft: rgba(212, 164, 62, 0.12);
+  --color-accent-border: rgba(212, 164, 62, 0.22);
+  --color-accent-chip-bg: rgba(212, 164, 62, 0.08);
+  --color-accent-chip-bd: rgba(212, 164, 62, 0.16);
+  --color-accent-glow: rgba(212, 164, 62, 0.25);
+  --color-accent-disabled: rgba(212, 164, 62, 0.20);
+  --color-accent-disabled-text: rgba(255, 255, 255, 0.40);
+
+  --color-success: #5a8f4a;
+  --color-health-glow: rgba(90, 143, 74, 0.35);
+
+  --color-surface-card: rgba(255, 255, 255, 0.03);
+  --color-surface-hover: rgba(212, 164, 62, 0.08);
+  --color-surface-bubble: rgba(255, 255, 255, 0.025);
+  --color-surface-input: rgba(255, 255, 255, 0.03);
+
+  --color-border-subtle: rgba(255, 255, 255, 0.04);
+  --color-border-standard: rgba(255, 255, 255, 0.06);
+  --color-border-prominent: rgba(255, 255, 255, 0.09);
+
+  --color-user-bubble-bg: rgba(212, 164, 62, 0.08);
+  --color-user-bubble-bd: rgba(212, 164, 62, 0.12);
+  --color-user-bubble-text: #d5d1c8;
+
+  --color-badge-bg: rgba(255, 255, 255, 0.05);
+  --color-badge-bd: rgba(255, 255, 255, 0.08);
+
+  --color-scrollbar-thumb: rgba(255, 255, 255, 0.07);
+  --color-scrollbar-thumb-hover: rgba(255, 255, 255, 0.14);
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.15);
+  --shadow-card-hover: 0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-button: none;
+}
