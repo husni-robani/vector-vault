@@ -121,5 +121,22 @@ class SQLiteDocumentRepository(DocumentRepositoryPort):
             logger.exception(f"failed to delete document({doc_id})")
             raise ExternalServiceError(f"failed to delete document({doc_id})") from e
 
+    def find_by_filename(self, filename: str) -> Document | None:
+        cursor: sqlite3.Cursor = self.conn.cursor()
+
+        try: 
+            with self.conn:
+                cursor.execute("SELECT * FROM documents WHERE filename = ?", (filename, ))
+
+            row = cursor.fetchone()
+
+            if row :
+                return Document(**dict(row))
+
+            return None
+        except Exception as e:
+            logger.exception(f"failed to find document by filename ({filename})")
+            raise ExternalServiceError(f"failed to find document by filename({filename})") from e
+
     def close(self):
         self.conn.close()

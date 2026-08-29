@@ -42,6 +42,17 @@ class DocumentRepositoryPort(ABC):
         pass
 
     @abstractmethod
+    def find_by_filename(self, filename: str) -> Document | None:
+        """Look up a single document by filename.
+
+        Args: 
+            filename: document filename.
+
+        Returns: 
+            The matching document entity.
+        """
+
+    @abstractmethod
     def delete(self, doc_id: str):
         """Remove a document record by ID.
 
