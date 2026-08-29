@@ -115,14 +115,16 @@ class TestUploadDocument:
 
         assert response.status_code == 422
 
-    def test_upload_unsupported_file_type_raises_value_error(self, client):
+    def test_upload_unsupported_file_type_rejected(self, client):
         files = {
             "document": ("notes.txt", b"plain text", "text/plain"),
         }
         data = {"title": "Unsupported"}
 
-        with pytest.raises(ValueError, match="text/plain"):
-            client.post("/api/documents", files=files, data=data)
+        response = client.post("/api/documents", files=files, data=data)
+
+        assert response.status_code == 400
+        assert response.json()["message"] == "Unsupported file type: .txt"
 
     def test_upload_duplicate_filename_rejected(self, client, sample_md_bytes):
         files = {

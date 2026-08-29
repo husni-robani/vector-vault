@@ -48,7 +48,9 @@ def mock_vector_store():
 
 @pytest.fixture
 def mock_document_repo():
-    return MagicMock(spec=DocumentRepositoryPort)
+    m = MagicMock(spec=DocumentRepositoryPort)
+    m.find_by_filename.return_value = None
+    return m
 
 
 @pytest.fixture
