@@ -60,7 +60,7 @@ def upload_document(
         filename=body.document.filename,
         title=body.title,
         content=file_bytes,
-        content_type=DocumentType(body.document.content_type),
+        content_type=DocumentType(DocumentType.from_filename(body.document.filename)),
     )
 
     result = ingest_document_usecase.execute(document_dto=document_data)
