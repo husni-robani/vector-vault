@@ -11,6 +11,7 @@ from app.application.ports import (
 from app.application.dto import IngestDocumentInput, IngestDocumentOutput
 from app.domain.chunks import Chunk, MetaData
 from app.domain.documents import Document, DocumentStatus, DocumentType
+from app.domain.exceptions import FileAlreadyExistsError
 from uuid import uuid4
 from datetime import datetime
 from pathlib import Path
@@ -36,7 +37,12 @@ class IngestDocumentUseCase:
         self._vector_store = vector_store
 
     def execute(self, document_dto: IngestDocumentInput) -> IngestDocumentOutput:
-        # 1. save the file
+        # cannot re-ingest the same filename document
+        doc: Document | None = self._doc_repo.find_by_filename(filename=document_dto.filename)
+        if doc is not None:
+            logger.warning("file (%s) already exists", document_dto.filename)
+            raise FileAlreadyExistsError("file already exists")
+        
         file_path: str = self._file_storage.save(
             document_dto.filename, document_dto.content
         )
